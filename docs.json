@@ -118,7 +118,8 @@
               "api/catalogs/tipo-licencia",
               "api/catalogs/tipo-disponibilidad",
               "api/catalogs/tipo-prioridad",
-              "api/catalogs/tipo-servicio"
+              "api/catalogs/tipo-servicio",
+              "api/catalogs/tipo-gasto"
             ]
           },
           {
@@ -127,6 +128,7 @@
               "api/lugar/overview",
               "api/departamento/overview",
               "api/solicitante/overview",
+              "api/rol/overview",
               "api/factura/overview",
               "api/cupon/overview"
             ]

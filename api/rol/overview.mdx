@@ -1,0 +1,286 @@
+---
+title: Role Management
+description: Manage user roles and permissions in the transportation request system
+---
+
+# Rol (Role) API
+
+The Role API manages user roles within the transportation request system. Roles define access permissions and are assigned to user profiles to control system capabilities.
+
+## Endpoints
+
+<CardGroup cols={2}>
+  <Card title="Create Role" icon="plus" href="#create-role">
+    Create a new role entry
+  </Card>
+  <Card title="List All Roles" icon="list" href="#list-all-roles">
+    Get all active roles (unpaginated)
+  </Card>
+  <Card title="Get Role" icon="file" href="#get-role-by-id">
+    Retrieve a specific role
+  </Card>
+  <Card title="List Roles" icon="rectangle-list" href="#list-roles-paginated">
+    List roles with pagination
+  </Card>
+  <Card title="Update Role" icon="pen" href="#update-role">
+    Update an existing role
+  </Card>
+  <Card title="Delete Role" icon="trash" href="#delete-role">
+    Soft delete a role
+  </Card>
+</CardGroup>
+
+## Create Role
+
+**POST /rol**
+
+Create a new role in the system.
+
+### Request Body
+
+<ParamField body="codigo" type="string" required>
+  Unique role code (e.g., "ADMIN", "SOLICITANTE", "APROBADOR")
+</ParamField>
+
+<ParamField body="nombre" type="string" required>
+  Role name (e.g., "Administrador", "Solicitante", "Aprobador")
+</ParamField>
+
+### Example
+
+```bash
+curl -X POST https://api.example.com/rol \
+  -H "Content-Type: application/json" \
+  -d '{
+    "codigo": "COORD_TRANS",
+    "nombre": "Coordinador de Transporte"
+  }'
+```
+
+### Response
+
+```json
+{
+  "exito": true,
+  "mensaje": "Rol creado exitosamente",
+  "datos": {
+    "id": 5,
+    "codigo": "COORD_TRANS",
+    "nombre": "Coordinador de Transporte",
+    "eliminado": false,
+    "fechaHoraCreacion": "2026-03-10T12:00:00",
+    "fechaHoraActualizacion": "2026-03-10T12:00:00"
+  }
+}
+```
+
+## List All Roles
+
+**GET /rol/todos/lista**
+
+Retrieve all active roles without pagination. Ideal for dropdown menus and role assignment forms.
+
+### Query Parameters
+
+<ParamField query="codigo" type="string">
+  Filter by role code (partial match)
+</ParamField>
+
+<ParamField query="nombre" type="string">
+  Filter by role name (partial match)
+</ParamField>
+
+<ParamField query="busqueda" type="string">
+  General search across codigo and nombre fields
+</ParamField>
+
+### Example
+
+```bash
+curl https://api.example.com/rol/todos/lista?busqueda=admin
+```
+
+## Get Role by ID
+
+**GET /rol/{id_rol}**
+
+Retrieve a specific role by its ID.
+
+### Path Parameters
+
+<ParamField path="id_rol" type="integer" required>
+  Role ID
+</ParamField>
+
+### Response
+
+```json
+{
+  "exito": true,
+  "mensaje": "Rol obtenido exitosamente",
+  "datos": {
+    "id": 5,
+    "codigo": "COORD_TRANS",
+    "nombre": "Coordinador de Transporte",
+    "eliminado": false,
+    "fechaHoraCreacion": "2026-03-10T12:00:00",
+    "fechaHoraActualizacion": "2026-03-10T12:00:00"
+  }
+}
+```
+
+## List Roles (Paginated)
+
+**GET /rol**
+
+List roles with pagination and filtering capabilities.
+
+### Query Parameters
+
+<ParamField query="pagina" type="integer" default="1">
+  Page number (starts at 1)
+</ParamField>
+
+<ParamField query="por_pagina" type="integer" default="10">
+  Records per page (max 100)
+</ParamField>
+
+<ParamField query="codigo" type="string">
+  Filter by role code (partial match)
+</ParamField>
+
+<ParamField query="nombre" type="string">
+  Filter by role name (partial match)
+</ParamField>
+
+<ParamField query="busqueda" type="string">
+  General search across codigo and nombre fields
+</ParamField>
+
+### Example
+
+```bash
+curl https://api.example.com/rol?pagina=1&por_pagina=20
+```
+
+### Response
+
+```json
+{
+  "exito": true,
+  "mensaje": "Listado de roles obtenido exitosamente",
+  "datos": {
+    "registros": [
+      {
+        "id": 1,
+        "codigo": "ADMIN",
+        "nombre": "Administrador"
+      },
+      {
+        "id": 2,
+        "codigo": "SOLICITANTE",
+        "nombre": "Solicitante"
+      },
+      {
+        "id": 3,
+        "codigo": "APROBADOR",
+        "nombre": "Aprobador"
+      }
+    ],
+    "paginacion": {
+      "paginaActual": 1,
+      "registrosPorPagina": 20,
+      "totalRegistros": 3,
+      "totalPaginas": 1
+    }
+  }
+}
+```
+
+## Update Role
+
+**PUT /rol/{id_rol}**
+
+Update an existing role. All fields are optional.
+
+### Path Parameters
+
+<ParamField path="id_rol" type="integer" required>
+  Role ID
+</ParamField>
+
+### Request Body
+
+<ParamField body="codigo" type="string">
+  Updated role code (must remain unique)
+</ParamField>
+
+<ParamField body="nombre" type="string">
+  Updated role name (must remain unique)
+</ParamField>
+
+### Example
+
+```bash
+curl -X PUT https://api.example.com/rol/5 \
+  -H "Content-Type: application/json" \
+  -d '{
+    "nombre": "Coordinador General de Transporte"
+  }'
+```
+
+## Delete Role
+
+**DELETE /rol/{id_rol}**
+
+Soft delete a role. The role is marked as inactive rather than physically deleted.
+
+### Path Parameters
+
+<ParamField path="id_rol" type="integer" required>
+  Role ID
+</ParamField>
+
+<Warning>
+  Cannot delete roles that are currently assigned to active user profiles. Remove role assignments first.
+</Warning>
+
+### Example
+
+```bash
+curl -X DELETE https://api.example.com/rol/5
+```
+
+### Response
+
+```json
+{
+  "exito": true,
+  "mensaje": "Rol eliminado exitosamente",
+  "datos": {
+    "id": 5,
+    "codigo": "COORD_TRANS",
+    "nombre": "Coordinador General de Transporte",
+    "eliminado": true,
+    "fechaHoraEliminacion": "2026-03-10T15:30:00"
+  }
+}
+```
+
+## Response Codes
+
+- **200** - Success
+- **201** - Created
+- **404** - Role not found
+- **409** - Conflict (duplicate codigo or nombre, or role in use)
+- **500** - Internal server error
+
+## Common Roles
+
+Typical roles in the system include:
+
+- **ADMIN** - System administrator with full access
+- **SOLICITANTE** - User who can create transport requests
+- **APROBADOR** - User who can approve/reject requests
+- **COORD_TRANS** - Transport coordinator managing missions
+- **MOTORISTA** - Driver with mobile app access

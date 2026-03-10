@@ -1,0 +1,194 @@
+---
+title: Expense Type Catalog
+description: Manage expense types for mission invoicing
+---
+
+# Tipo de Gasto (Expense Type)
+
+The Expense Type catalog manages the types of expenses that can be charged against transportation missions. These expense types are used when creating mission invoices and their associated coupons.
+
+## Endpoints
+
+### Create Expense Type
+
+<ParamField path="POST /tipo-gasto" type="endpoint">
+  Create a new expense type entry
+</ParamField>
+
+**Request Body**
+
+<ParamField body="nombre" type="string" required>
+  Expense type name (max 100 characters, must be unique)
+</ParamField>
+
+<ParamField body="descripcion" type="string">
+  Optional description (max 250 characters)
+</ParamField>
+
+**Example Request**
+
+```bash
+curl -X POST https://api.example.com/tipo-gasto \
+  -H "Content-Type: application/json" \
+  -d '{
+    "nombre": "Combustible",
+    "descripcion": "Gastos de combustible para misiones de transporte"
+  }'
+```
+
+**Response**
+
+```json
+{
+  "exito": true,
+  "mensaje": "Tipo de gasto creado exitosamente",
+  "datos": {
+    "id": 1,
+    "nombre": "Combustible",
+    "descripcion": "Gastos de combustible para misiones de transporte",
+    "eliminado": false,
+    "fechaHoraCreacion": "2026-03-10T12:00:00",
+    "fechaHoraActualizacion": "2026-03-10T12:00:00"
+  }
+}
+```
+
+### List All Expense Types (Unpaginated)
+
+<ParamField path="GET /tipo-gasto/todos/lista" type="endpoint">
+  Get all active expense types without pagination
+</ParamField>
+
+**Query Parameters**
+
+<ParamField query="nombre" type="string">
+  Filter by name (partial match)
+</ParamField>
+
+<ParamField query="busqueda" type="string">
+  General search across name field
+</ParamField>
+
+**Use Case**: Ideal for dropdown menus and select fields in forms.
+
+### Get Expense Type by ID
+
+<ParamField path="GET /tipo-gasto/{id}" type="endpoint">
+  Retrieve a specific expense type
+</ParamField>
+
+**Path Parameters**
+
+<ParamField path="id_tipo_gasto" type="integer" required>
+  Expense type ID
+</ParamField>
+
+### List Expense Types (Paginated)
+
+<ParamField path="GET /tipo-gasto" type="endpoint">
+  List expense types with pagination and filters
+</ParamField>
+
+**Query Parameters**
+
+<ParamField query="pagina" type="integer" default="1">
+  Page number (starts at 1)
+</ParamField>
+
+<ParamField query="porPagina" type="integer" default="10">
+  Records per page (max 100)
+</ParamField>
+
+<ParamField query="nombre" type="string">
+  Filter by name (partial match)
+</ParamField>
+
+<ParamField query="busqueda" type="string">
+  General search across name field
+</ParamField>
+
+**Response**
+
+```json
+{
+  "exito": true,
+  "mensaje": "Listado de tipos de gasto obtenido exitosamente",
+  "datos": {
+    "registros": [
+      {
+        "id": 1,
+        "nombre": "Combustible",
+        "descripcion": "Gastos de combustible"
+      },
+      {
+        "id": 2,
+        "nombre": "Peaje",
+        "descripcion": "Gastos de peajes y autopistas"
+      }
+    ],
+    "paginacion": {
+      "paginaActual": 1,
+      "registrosPorPagina": 10,
+      "totalRegistros": 2,
+      "totalPaginas": 1
+    }
+  }
+}
+```
+
+### Update Expense Type
+
+<ParamField path="PUT /tipo-gasto/{id}" type="endpoint">
+  Update an existing expense type
+</ParamField>
+
+**Path Parameters**
+
+<ParamField path="id_tipo_gasto" type="integer" required>
+  Expense type ID
+</ParamField>
+
+**Request Body** (all fields optional)
+
+<ParamField body="nombre" type="string">
+  New name (must be unique if changed)
+</ParamField>
+
+<ParamField body="descripcion" type="string">
+  Updated description
+</ParamField>
+
+### Delete Expense Type
+
+<ParamField path="DELETE /tipo-gasto/{id}" type="endpoint">
+  Soft delete an expense type
+</ParamField>
+
+**Path Parameters**
+
+<ParamField path="id_tipo_gasto" type="integer" required>
+  Expense type ID
+</ParamField>
+
+<Warning>
+  Soft deletion marks the record as inactive. Cannot delete expense types that are referenced by active invoice coupons.
+</Warning>
+
+## Response Codes
+
+- **200** - Success
+- **201** - Created
+- **404** - Expense type not found
+- **409** - Conflict (duplicate name)
+- **500** - Internal server error
+
+## Common Use Cases
+
+<CardGroup cols={2}>
+  <Card title="Mission Invoicing" icon="file-invoice-dollar">
+    Used when creating coupons for mission invoices to categorize expenses
+  </Card>
+  <Card title="Expense Reporting" icon="chart-line">
+    Filter and analyze mission expenses by type for financial reporting
+  </Card>
+</CardGroup>
