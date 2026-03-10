@@ -1,0 +1,290 @@
+---
+title: Vehicle Status Catalog
+description: Manage vehicle status catalog with assignment permission indicators
+---
+
+# Vehicle Status Catalog API
+
+Manage the catalog of vehicle statuses (EstadoVehiculo) used to track vehicle availability and condition. Includes indicators for whether vehicles can be assigned in each status.
+
+**Base Path:** `/estado-vehiculo`
+
+## Endpoints
+
+### Create Vehicle Status
+
+```http
+POST /estado-vehiculo/
+```
+
+Creates a new vehicle status.
+
+#### Request Body
+
+```json
+{
+  "codigo": "DISPONIBLE",
+  "nombre": "Disponible",
+  "permiteAsignacion": true,
+  "descripcion": "Vehículo disponible para asignación"
+}
+```
+
+#### Field Validations
+
+- **codigo** (required): Unique, uppercase, no spaces
+- **nombre** (required): Unique across active records
+- **permiteAsignacion** (required): Boolean indicating if vehicle can be assigned in this status
+- **descripcion** (optional): Max 250 characters
+
+#### Response
+
+```json
+{
+  "success": true,
+  "message": "Estado de vehículo creado exitosamente",
+  "data": {
+    "IdEstadoVehiculo": 1,
+    "Codigo": "DISPONIBLE",
+    "Nombre": "Disponible",
+    "PermiteAsignacion": true,
+    "Descripcion": "Vehículo disponible para asignación",
+    "EsActivo": true
+  }
+}
+```
+
+---
+
+### Get Vehicle Status by ID
+
+```http
+GET /estado-vehiculo/{id_estado_vehiculo}
+```
+
+Retrieves a specific vehicle status by ID. Only returns active records.
+
+#### Path Parameters
+
+- **id_estado_vehiculo** (integer, required): Vehicle status ID
+
+#### Response
+
+```json
+{
+  "success": true,
+  "message": "Estado de vehículo obtenido exitosamente",
+  "data": {
+    "IdEstadoVehiculo": 1,
+    "Codigo": "DISPONIBLE",
+    "Nombre": "Disponible",
+    "PermiteAsignacion": true,
+    "Descripcion": "Vehículo disponible para asignación",
+    "EsActivo": true
+  }
+}
+```
+
+---
+
+### List Vehicle Statuses (Paginated)
+
+```http
+GET /estado-vehiculo/
+```
+
+Lists vehicle statuses with pagination and optional filters.
+
+#### Query Parameters
+
+- **pagina** (integer, optional, default: 1): Page number (min: 1)
+- **por_pagina** (integer, optional, default: 10): Records per page (min: 1, max: 100)
+- **codigo** (string, optional): Filter by code (partial match)
+- **nombre** (string, optional): Filter by name (partial match)
+- **permiteAsignacion** (boolean, optional): Filter by assignment permission
+- **busqueda** (string, optional): General search in code, name, and description
+
+#### Response
+
+```json
+{
+  "success": true,
+  "message": "Listado de estados de vehículo obtenido exitosamente",
+  "data": {
+    "items": [
+      {
+        "IdEstadoVehiculo": 1,
+        "Codigo": "DISPONIBLE",
+        "Nombre": "Disponible",
+        "PermiteAsignacion": true,
+        "Descripcion": "Vehículo disponible",
+        "EsActivo": true
+      },
+      {
+        "IdEstadoVehiculo": 2,
+        "Codigo": "MANTENIMIENTO",
+        "Nombre": "En Mantenimiento",
+        "PermiteAsignacion": false,
+        "Descripcion": "Vehículo en taller",
+        "EsActivo": true
+      }
+    ],
+    "total": 4,
+    "pagina": 1,
+    "porPagina": 10,
+    "totalPaginas": 1
+  }
+}
+```
+
+---
+
+### List All Vehicle Statuses (No Pagination)
+
+```http
+GET /estado-vehiculo/todos/lista
+```
+
+Retrieves all active vehicle statuses without pagination. Ideal for dropdowns and select components.
+
+#### Query Parameters
+
+- **codigo** (string, optional): Filter by code
+- **nombre** (string, optional): Filter by name
+- **permiteAsignacion** (boolean, optional): Filter by assignment permission
+- **busqueda** (string, optional): General search
+
+#### Response
+
+```json
+{
+  "success": true,
+  "message": "Listado completo de estados de vehículo obtenido exitosamente",
+  "data": [
+    {
+      "IdEstadoVehiculo": 1,
+      "Codigo": "DISPONIBLE",
+      "Nombre": "Disponible",
+      "PermiteAsignacion": true
+    },
+    {
+      "IdEstadoVehiculo": 2,
+      "Codigo": "EN_MISION",
+      "Nombre": "En Misión",
+      "PermiteAsignacion": false
+    }
+  ]
+}
+```
+
+---
+
+### Update Vehicle Status
+
+```http
+PUT /estado-vehiculo/{id_estado_vehiculo}
+```
+
+Updates an existing vehicle status. Only provided fields are updated.
+
+#### Path Parameters
+
+- **id_estado_vehiculo** (integer, required): Vehicle status ID
+
+#### Request Body
+
+```json
+{
+  "nombre": "Disponible para Asignación",
+  "descripcion": "Vehículo listo para ser asignado a una misión"
+}
+```
+
+#### Validations
+
+- Record must exist and be active
+- If changing `codigo`, must be unique
+- If changing `nombre`, must be unique
+
+#### Response
+
+```json
+{
+  "success": true,
+  "message": "Estado de vehículo actualizado exitosamente",
+  "data": {
+    "IdEstadoVehiculo": 1,
+    "Codigo": "DISPONIBLE",
+    "Nombre": "Disponible para Asignación",
+    "PermiteAsignacion": true,
+    "Descripcion": "Vehículo listo para ser asignado a una misión",
+    "EsActivo": true
+  }
+}
+```
+
+---
+
+### Delete Vehicle Status
+
+```http
+DELETE /estado-vehiculo/{id_estado_vehiculo}
+```
+
+Performs a soft delete on a vehicle status. Cannot delete if there are active vehicles using this status.
+
+#### Path Parameters
+
+- **id_estado_vehiculo** (integer, required): Vehicle status ID
+
+#### Validations
+
+- Record must exist and be active
+- Cannot have active vehicles associated
+
+#### Response
+
+```json
+{
+  "success": true,
+  "message": "Estado de vehículo eliminado exitosamente",
+  "data": {
+    "IdEstadoVehiculo": 1,
+    "EsActivo": false
+  }
+}
+```
+
+---
+
+## Error Responses
+
+### 404 Not Found
+
+```json
+{
+  "success": false,
+  "message": "Estado de vehículo no encontrado",
+  "data": null
+}
+```
+
+### 409 Conflict
+
+```json
+{
+  "success": false,
+  "message": "Ya existe un estado de vehículo con ese código",
+  "data": null
+}
+```
+
+### 500 Internal Server Error
+
+```json
+{
+  "success": false,
+  "message": "Error interno del servidor",
+  "data": null
+}
+```

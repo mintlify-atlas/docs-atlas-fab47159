@@ -1,0 +1,87 @@
+---
+title: 'Cupón Factura API'
+description: 'Fuel coupon management for mission invoices'
+icon: 'ticket'
+---
+
+## Overview
+
+The Cupón Factura API manages individual fuel coupons associated with mission invoices. Coupons can be created during invoice creation or added/modified independently.
+
+## Endpoints
+
+### Add Coupon to Invoice
+
+**POST** `/cupon-factura/`
+
+Adds a fuel coupon to an existing invoice.
+
+**Validations:**
+- **idFacturaMision**: Invoice must exist and be active
+- **codigoCupon**: Cannot be duplicated within the same invoice
+- **montoCupon**: Must be greater than 0; total coupon sum ≤ invoice montoTotal
+
+---
+
+### List Coupons by Invoice
+
+**GET** `/cupon-factura/por-factura/{id_factura}`
+
+Retrieves all active coupons associated with a specific invoice.
+
+**Path Parameters:**
+- `id_factura` (integer, required): The invoice ID
+
+---
+
+### Get Coupon by ID
+
+**GET** `/cupon-factura/{id_cupon}`
+
+Retrieves a specific coupon by its ID.
+
+**Path Parameters:**
+- `id_cupon` (integer, required): The coupon ID
+
+---
+
+### Update Coupon
+
+**PUT** `/cupon-factura/{id_cupon}`
+
+Updates an existing coupon.
+
+**Path Parameters:**
+- `id_cupon` (integer, required): The coupon ID
+
+**Validations:**
+- Coupon must exist and be active
+- Code changes cannot create duplicates within the same invoice
+- Amount changes cannot cause total coupon sum to exceed invoice montoTotal
+
+---
+
+### Delete Coupon
+
+**DELETE** `/cupon-factura/{id_cupon}`
+
+Performs logical deletion of a coupon.
+
+**Path Parameters:**
+- `id_cupon` (integer, required): The coupon ID
+
+---
+
+## Response Codes
+
+- **200**: Success
+- **201**: Created
+- **404**: Not found
+- **409**: Conflict (duplicate code or sum exceeds invoice total)
+- **500**: Internal server error
+
+---
+
+## Related Endpoints
+
+Coupons can also be created nested within invoice creation. See the [Factura Misión API](/api/factura/overview) for details on creating invoices with embedded coupons.

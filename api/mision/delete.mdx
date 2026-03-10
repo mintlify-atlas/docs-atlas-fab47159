@@ -1,0 +1,68 @@
+---
+title: 'Delete Mission'
+api: 'DELETE /mision/{id}'
+description: 'Soft delete a scheduled mission'
+---
+
+## Delete Mission
+
+Performs a logical deletion (soft delete) of a mission in `PROGRAMADA` (scheduled) state.
+
+### Path Parameters
+
+<ParamField path="id" type="integer" required>
+  ID of the mission to delete.
+</ParamField>
+
+### Response
+
+<ResponseField name="success" type="boolean">
+  Indicates if the request was successful.
+</ResponseField>
+
+<ResponseField name="message" type="string">
+  Response message: "Misión eliminada exitosamente"
+</ResponseField>
+
+<ResponseField name="data" type="object">
+  Confirmation object with the deleted mission ID.
+</ResponseField>
+
+### Validations
+
+- Mission must be in `PROGRAMADA` state
+- Associated stops and state history are also deleted
+- This is a soft delete - the mission is marked as deleted but not physically removed from the database
+
+<RequestExample>
+```bash cURL
+curl -X DELETE "https://api.example.com/mision/1"
+```
+</RequestExample>
+
+<ResponseExample>
+```json 200 - Success
+{
+  "success": true,
+  "message": "Misión eliminada exitosamente",
+  "data": {
+    "idMision": 1,
+    "eliminado": true
+  }
+}
+```
+
+```json 404 - Not Found
+{
+  "success": false,
+  "message": "Misión no encontrada"
+}
+```
+
+```json 409 - Invalid State
+{
+  "success": false,
+  "message": "Solo se pueden eliminar misiones en estado PROGRAMADA"
+}
+```
+</ResponseExample>

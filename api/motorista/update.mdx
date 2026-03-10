@@ -1,0 +1,256 @@
+---
+title: 'Update Driver'
+api: 'PUT /motorista/{id}'
+description: 'Update driver information including profile and driver-specific details'
+---
+
+Updates the information of an existing driver. All fields are optional - only provided fields will be updated.
+
+## Endpoint
+
+```
+PUT /motorista/{id_perfil}
+```
+
+## Path Parameters
+
+<ParamField path="id_perfil" type="integer" required>
+  The unique profile ID of the driver to update
+</ParamField>
+
+## Request Body
+
+All fields are optional. Only include fields you want to update.
+
+<ParamField body="email" type="string">
+  Driver's email address. Must be unique and valid format.
+</ParamField>
+
+<ParamField body="nombre1" type="string">
+  First name (max 100 characters)
+</ParamField>
+
+<ParamField body="nombre2" type="string">
+  Second name (max 100 characters)
+</ParamField>
+
+<ParamField body="nombre3" type="string">
+  Third name (max 100 characters)
+</ParamField>
+
+<ParamField body="apellido1" type="string">
+  First surname (max 100 characters)
+</ParamField>
+
+<ParamField body="apellido2" type="string">
+  Second surname (max 100 characters)
+</ParamField>
+
+<ParamField body="apellido3" type="string">
+  Married name (max 100 characters)
+</ParamField>
+
+<ParamField body="telefono" type="string">
+  Contact phone number (max 20 characters)
+</ParamField>
+
+<ParamField body="dui" type="string">
+  National ID number. Format: `########-#`. Must be unique.
+</ParamField>
+
+<ParamField body="nit" type="string">
+  Tax identification number (max 17 characters)
+</ParamField>
+
+<ParamField body="direccion" type="string">
+  Residential address (max 500 characters)
+</ParamField>
+
+<ParamField body="codigoEmpleado" type="string">
+  Employee code (max 50 characters)
+</ParamField>
+
+<ParamField body="cargoNominal" type="string">
+  Nominal position (max 150 characters)
+</ParamField>
+
+<ParamField body="cargoFuncional" type="string">
+  Functional position (max 150 characters)
+</ParamField>
+
+<ParamField body="observaciones" type="string">
+  Additional observations or notes
+</ParamField>
+
+<ParamField body="idDepartamentoAsignado" type="integer">
+  ID of the assigned department. Must reference an existing department.
+</ParamField>
+
+<ParamField body="idTipoLicencia" type="integer">
+  ID of the license type. Must reference an existing license type.
+</ParamField>
+
+<ParamField body="numeroLicencia" type="string">
+  Driver's license number (max 50 characters)
+</ParamField>
+
+<ParamField body="fechaVencimientoLicencia" type="string">
+  License expiration date. Format: `YYYY-MM-DD`
+</ParamField>
+
+<ParamField body="idTipoDisponibilidad" type="integer">
+  ID of the availability status. Must reference an existing availability type.
+</ParamField>
+
+<ParamField body="imei" type="string">
+  Mobile device IMEI (max 100 characters). Must be unique if provided.
+</ParamField>
+
+## Response
+
+<ResponseField name="success" type="boolean">
+  Indicates if the operation was successful
+</ResponseField>
+
+<ResponseField name="message" type="string">
+  Success or error message
+</ResponseField>
+
+<ResponseField name="data" type="object">
+  Updated driver information with all current values
+</ResponseField>
+
+## Example Request
+
+```json
+{
+  "telefono": "7777-9999",
+  "direccion": "Nueva dirección, San Salvador",
+  "idTipoDisponibilidad": 2,
+  "fechaVencimientoLicencia": "2027-12-31"
+}
+```
+
+## Example Response
+
+```json
+{
+  "success": true,
+  "message": "Motorista actualizado exitosamente",
+  "data": {
+    "idPerfil": 123,
+    "nombreCompleto": "JUAN CARLOS MARTINEZ LOPEZ",
+    "email": "motorista@ejemplo.com",
+    "telefono": "7777-9999",
+    "direccion": "Nueva dirección, San Salvador",
+    "disponibilidad": "Ocupado",
+    "fechaVencimientoLicencia": "2027-12-31"
+  }
+}
+```
+
+## Validations
+
+The endpoint performs the following validations:
+
+- **Driver existence**: Driver must exist and be active (not deleted)
+- **Unique constraints**: If email, DUI, or IMEI are being changed, they must be unique
+- **Format validation**:
+  - Email must match valid email format
+  - DUI must match format `########-#`
+  - Dates must match format `YYYY-MM-DD`
+- **Foreign key validation**: If changing department, license type, or availability, the referenced records must exist
+
+## Status Codes
+
+- `200`: Driver updated successfully
+- `400`: Validation error (invalid format)
+- `404`: Driver not found or has been deleted
+- `409`: Conflict (duplicate email, DUI, or IMEI)
+- `500`: Internal server error
+
+## Error Response Examples
+
+### Driver Not Found
+
+```json
+{
+  "success": false,
+  "message": "Motorista no encontrado o ha sido eliminado",
+  "data": null
+}
+```
+
+### Duplicate Email
+
+```json
+{
+  "success": false,
+  "message": "El correo electrónico ya está registrado para otro motorista",
+  "data": null
+}
+```
+
+### Invalid Date Format
+
+```json
+{
+  "success": false,
+  "message": "La fecha debe tener el formato YYYY-MM-DD",
+  "data": null
+}
+```
+
+---
+
+## Quick Availability Update
+
+For updating only the driver's availability status, use the dedicated PATCH endpoint for better performance.
+
+### Endpoint
+
+```
+PATCH /motorista/{id_perfil}/disponibilidad
+```
+
+### Request Body
+
+<ParamField body="idTipoDisponibilidad" type="integer" required>
+  ID of the new availability status
+</ParamField>
+
+### Example Request
+
+```json
+{
+  "idTipoDisponibilidad": 2
+}
+```
+
+### Example Response
+
+```json
+{
+  "success": true,
+  "message": "Disponibilidad del motorista actualizada exitosamente",
+  "data": {
+    "idPerfil": 123,
+    "nombreCompleto": "JUAN CARLOS MARTINEZ LOPEZ",
+    "idTipoDisponibilidad": 2,
+    "disponibilidad": "Ocupado"
+  }
+}
+```
+
+### Use Cases
+
+- Quick status changes during mission assignments
+- Marking drivers as unavailable for maintenance
+- Updating availability from mobile apps
+- Real-time status updates in dispatch systems
+
+### Status Codes
+
+- `200`: Availability updated successfully
+- `404`: Driver not found
+- `500`: Internal server error

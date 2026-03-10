@@ -1,0 +1,276 @@
+---
+title: Availability Type Catalog
+description: Manage availability type catalog for driver availability status classification
+---
+
+# Availability Type Catalog API
+
+Manage the catalog of availability types (TipoDisponibilidad) used to classify driver availability statuses.
+
+**Base Path:** `/tipo-disponibilidad`
+
+## Endpoints
+
+### Create Availability Type
+
+```http
+POST /tipo-disponibilidad/
+```
+
+Creates a new availability type.
+
+#### Request Body
+
+```json
+{
+  "codigo": "DISPONIBLE",
+  "nombre": "Disponible"
+}
+```
+
+#### Field Validations
+
+- **codigo** (required): Unique, uppercase, no spaces
+- **nombre** (required): Unique across active records, max 20 characters
+
+#### Response
+
+```json
+{
+  "success": true,
+  "message": "Tipo de disponibilidad creado exitosamente",
+  "data": {
+    "IdTipoDisponibilidad": 1,
+    "Codigo": "DISPONIBLE",
+    "Nombre": "Disponible",
+    "EsActivo": true
+  }
+}
+```
+
+---
+
+### Get Availability Type by ID
+
+```http
+GET /tipo-disponibilidad/{id_tipo_disponibilidad}
+```
+
+Retrieves a specific availability type by ID. Only returns active records.
+
+#### Path Parameters
+
+- **id_tipo_disponibilidad** (integer, required): Availability type ID
+
+#### Response
+
+```json
+{
+  "success": true,
+  "message": "Tipo de disponibilidad obtenido exitosamente",
+  "data": {
+    "IdTipoDisponibilidad": 1,
+    "Codigo": "DISPONIBLE",
+    "Nombre": "Disponible",
+    "EsActivo": true
+  }
+}
+```
+
+---
+
+### List Availability Types (Paginated)
+
+```http
+GET /tipo-disponibilidad/
+```
+
+Lists availability types with pagination and optional filters.
+
+#### Query Parameters
+
+- **pagina** (integer, optional, default: 1): Page number (min: 1)
+- **por_pagina** (integer, optional, default: 10): Records per page (min: 1, max: 100)
+- **codigo** (string, optional): Filter by code (partial match)
+- **nombre** (string, optional): Filter by name (partial match)
+- **busqueda** (string, optional): General search in code and name
+
+#### Response
+
+```json
+{
+  "success": true,
+  "message": "Listado de tipos de disponibilidad obtenido exitosamente",
+  "data": {
+    "items": [
+      {
+        "IdTipoDisponibilidad": 1,
+        "Codigo": "DISPONIBLE",
+        "Nombre": "Disponible",
+        "EsActivo": true
+      },
+      {
+        "IdTipoDisponibilidad": 2,
+        "Codigo": "OCUPADO",
+        "Nombre": "Ocupado",
+        "EsActivo": true
+      }
+    ],
+    "total": 4,
+    "pagina": 1,
+    "porPagina": 10,
+    "totalPaginas": 1
+  }
+}
+```
+
+---
+
+### List All Availability Types (No Pagination)
+
+```http
+GET /tipo-disponibilidad/todos/lista
+```
+
+Retrieves all active availability types without pagination. Ideal for dropdowns and select components.
+
+#### Query Parameters
+
+- **codigo** (string, optional): Filter by code
+- **nombre** (string, optional): Filter by name
+- **busqueda** (string, optional): General search
+
+#### Response
+
+```json
+{
+  "success": true,
+  "message": "Listado completo de tipos de disponibilidad obtenido exitosamente",
+  "data": [
+    {
+      "IdTipoDisponibilidad": 1,
+      "Codigo": "DISPONIBLE",
+      "Nombre": "Disponible"
+    },
+    {
+      "IdTipoDisponibilidad": 2,
+      "Codigo": "OCUPADO",
+      "Nombre": "Ocupado"
+    },
+    {
+      "IdTipoDisponibilidad": 3,
+      "Codigo": "VACACIONES",
+      "Nombre": "Vacaciones"
+    }
+  ]
+}
+```
+
+---
+
+### Update Availability Type
+
+```http
+PUT /tipo-disponibilidad/{id_tipo_disponibilidad}
+```
+
+Updates an existing availability type. Only provided fields are updated.
+
+#### Path Parameters
+
+- **id_tipo_disponibilidad** (integer, required): Availability type ID
+
+#### Request Body
+
+```json
+{
+  "nombre": "En Misión"
+}
+```
+
+#### Validations
+
+- Record must exist and be active
+- If changing `codigo`, must be unique
+- If changing `nombre`, must be unique
+
+#### Response
+
+```json
+{
+  "success": true,
+  "message": "Tipo de disponibilidad actualizado exitosamente",
+  "data": {
+    "IdTipoDisponibilidad": 2,
+    "Codigo": "OCUPADO",
+    "Nombre": "En Misión",
+    "EsActivo": true
+  }
+}
+```
+
+---
+
+### Delete Availability Type
+
+```http
+DELETE /tipo-disponibilidad/{id_tipo_disponibilidad}
+```
+
+Performs a soft delete on an availability type. Cannot delete if there are active drivers using this availability type.
+
+#### Path Parameters
+
+- **id_tipo_disponibilidad** (integer, required): Availability type ID
+
+#### Validations
+
+- Record must exist and be active
+- Cannot have active drivers (motoristas) associated
+
+#### Response
+
+```json
+{
+  "success": true,
+  "message": "Tipo de disponibilidad eliminado exitosamente",
+  "data": {
+    "IdTipoDisponibilidad": 1,
+    "EsActivo": false
+  }
+}
+```
+
+---
+
+## Error Responses
+
+### 404 Not Found
+
+```json
+{
+  "success": false,
+  "message": "Tipo de disponibilidad no encontrado",
+  "data": null
+}
+```
+
+### 409 Conflict
+
+```json
+{
+  "success": false,
+  "message": "Ya existe un tipo de disponibilidad con ese código",
+  "data": null
+}
+```
+
+### 500 Internal Server Error
+
+```json
+{
+  "success": false,
+  "message": "Error interno del servidor",
+  "data": null
+}
+```

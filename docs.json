@@ -1,122 +1,138 @@
 {
   "$schema": "https://mintlify.com/docs.json",
-  "theme": "mint",
-  "name": "Mint Starter Kit",
+  "name": "Solicitud Transporte API",
+  "theme": "sequoia",
   "colors": {
-    "primary": "#16A34A",
-    "light": "#07C983",
-    "dark": "#15803D"
+    "primary": "#1e40af",
+    "light": "#3b82f6",
+    "dark": "#1e3a8a"
   },
-  "favicon": "/favicon.svg",
+  "navbar": {
+    "primary": {
+      "type": "github",
+      "href": "https://github.com/pedro-navarrete/Solicitud_Transporte_Api_V2"
+    }
+  },
+  "footer": {
+    "socials": {
+      "github": "https://github.com/pedro-navarrete/Solicitud_Transporte_Api_V2"
+    }
+  },
   "navigation": {
     "tabs": [
       {
-        "tab": "Guides",
+        "tab": "Documentation",
         "groups": [
           {
-            "group": "Getting started",
+            "group": "Getting Started",
             "pages": [
-              "index",
+              "introduction",
               "quickstart",
-              "development"
+              "authentication"
             ]
           },
           {
-            "group": "Customization",
+            "group": "Core Concepts",
             "pages": [
-              "essentials/settings",
-              "essentials/navigation"
+              "concepts/architecture",
+              "concepts/workflow",
+              "concepts/error-handling"
             ]
           },
           {
-            "group": "Writing content",
+            "group": "Guides",
             "pages": [
-              "essentials/markdown",
-              "essentials/code",
-              "essentials/images",
-              "essentials/reusable-snippets"
-            ]
-          },
-          {
-            "group": "AI tools",
-            "pages": [
-              "ai-tools/cursor",
-              "ai-tools/claude-code",
-              "ai-tools/windsurf"
+              "guides/request-lifecycle",
+              "guides/mission-management",
+              "guides/vehicle-integration"
             ]
           }
         ]
       },
       {
-        "tab": "API reference",
+        "tab": "API Reference",
         "groups": [
           {
-            "group": "API documentation",
+            "group": "Core Resources",
             "pages": [
-              "api-reference/introduction"
+              "api/solicitud/overview",
+              "api/solicitud/create",
+              "api/solicitud/list",
+              "api/solicitud/get",
+              "api/solicitud/update",
+              "api/solicitud/approve",
+              "api/solicitud/reject",
+              "api/solicitud/cancel",
+              "api/solicitud/history",
+              "api/solicitud/delete"
             ]
           },
           {
-            "group": "Endpoint examples",
+            "group": "Mission Management",
             "pages": [
-              "api-reference/endpoint/get",
-              "api-reference/endpoint/create",
-              "api-reference/endpoint/delete",
-              "api-reference/endpoint/webhook"
+              "api/mision/overview",
+              "api/mision/create",
+              "api/mision/assign",
+              "api/mision/start",
+              "api/mision/finish",
+              "api/mision/cancel",
+              "api/mision/list",
+              "api/mision/get",
+              "api/mision/update",
+              "api/mision/delete"
+            ]
+          },
+          {
+            "group": "Vehicles",
+            "pages": [
+              "api/vehiculo/overview",
+              "api/vehiculo/create",
+              "api/vehiculo/create-by-plate",
+              "api/vehiculo/query-plate",
+              "api/vehiculo/list",
+              "api/vehiculo/get",
+              "api/vehiculo/update",
+              "api/vehiculo/delete"
+            ]
+          },
+          {
+            "group": "Drivers",
+            "pages": [
+              "api/motorista/overview",
+              "api/motorista/create",
+              "api/motorista/list",
+              "api/motorista/get",
+              "api/motorista/update",
+              "api/motorista/delete"
+            ]
+          },
+          {
+            "group": "Catalog Management",
+            "pages": [
+              "api/catalogs/overview",
+              "api/catalogs/estado-solicitud",
+              "api/catalogs/estado-mision",
+              "api/catalogs/estado-vehiculo",
+              "api/catalogs/clase-vehiculo",
+              "api/catalogs/tipo-combustible",
+              "api/catalogs/tipo-licencia",
+              "api/catalogs/tipo-disponibilidad",
+              "api/catalogs/tipo-prioridad",
+              "api/catalogs/tipo-servicio"
+            ]
+          },
+          {
+            "group": "Additional Resources",
+            "pages": [
+              "api/lugar/overview",
+              "api/departamento/overview",
+              "api/solicitante/overview",
+              "api/factura/overview",
+              "api/cupon/overview"
             ]
           }
         ]
       }
-    ],
-    "global": {
-      "anchors": [
-        {
-          "anchor": "Documentation",
-          "href": "https://mintlify.com/docs",
-          "icon": "book-open-cover"
-        },
-        {
-          "anchor": "Blog",
-          "href": "https://mintlify.com/blog",
-          "icon": "newspaper"
-        }
-      ]
-    }
-  },
-  "logo": {
-    "light": "/logo/light.svg",
-    "dark": "/logo/dark.svg"
-  },
-  "navbar": {
-    "links": [
-      {
-        "label": "Support",
-        "href": "mailto:hi@mintlify.com"
-      }
-    ],
-    "primary": {
-      "type": "button",
-      "label": "Dashboard",
-      "href": "https://dashboard.mintlify.com"
-    }
-  },
-  "contextual": {
-    "options": [
-     "copy",
-     "view",
-     "chatgpt",
-     "claude",
-     "perplexity",
-     "mcp",
-     "cursor",
-     "vscode"
-   ]
-  },
-  "footer": {
-    "socials": {
-      "x": "https://x.com/mintlify",
-      "github": "https://github.com/mintlify",
-      "linkedin": "https://linkedin.com/company/mintlify"
-    }
+    ]
   }
 }

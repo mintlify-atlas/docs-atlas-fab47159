@@ -1,0 +1,178 @@
+---
+title: "Delete Solicitud"
+api: "DELETE /solicitud/{id}"
+description: "Soft delete a pending solicitud"
+---
+
+## Overview
+
+Performs a soft delete (logical deletion) of a solicitud. The solicitud is not physically removed from the database but marked as deleted.
+
+<Warning>
+  Only solicitudes in **PENDIENTE_APROBACION** status can be deleted. Approved, rejected, or cancelled solicitudes cannot be deleted.
+</Warning>
+
+## Authentication
+
+Requires valid authentication token.
+
+## Path Parameters
+
+<ParamField path="id_solicitud" type="integer" required>
+  The unique ID of the solicitud to delete
+</ParamField>
+
+## Business Rules
+
+- Only solicitudes in **PENDIENTE_APROBACION** status can be deleted
+- Cannot delete if there are active missions associated (PENDIENTE, ASIGNADA, EN_CURSO)
+- Soft delete is performed (record remains in database with `Eliminado = 1`)
+- All associated records are also soft-deleted:
+  - Status history (`HistoricoEstadoSolicitud`)
+  - Location details (`DetalleLugarSolicitud`)
+- This operation cannot be undone through the API
+
+## Response
+
+<ResponseField name="success" type="boolean">
+  Indicates if the operation was successful
+</ResponseField>
+
+<ResponseField name="message" type="string">
+  Success message
+</ResponseField>
+
+<ResponseField name="data" type="object">
+  Deletion confirmation
+  
+  <Expandable title="Data Properties">
+    <ResponseField name="mensaje" type="string">
+      Confirmation message with solicitud code
+    </ResponseField>
+  </Expandable>
+</ResponseField>
+
+## Status Codes
+
+<ResponseField name="200" type="OK">
+  Solicitud deleted successfully
+</ResponseField>
+
+<ResponseField name="404" type="Not Found">
+  Solicitud with the specified ID does not exist
+</ResponseField>
+
+<ResponseField name="409" type="Conflict">
+  Cannot delete (not in PENDIENTE_APROBACION status or has active missions)
+</ResponseField>
+
+<ResponseField name="500" type="Internal Server Error">
+  Server error
+</ResponseField>
+
+<RequestExample>
+
+```bash cURL
+curl -X DELETE https://api.example.com/solicitud/42 \
+  -H "Authorization: Bearer YOUR_TOKEN"
+```
+
+```python Python
+import requests
+
+url = "https://api.example.com/solicitud/42"
+headers = {"Authorization": "Bearer YOUR_TOKEN"}
+
+response = requests.delete(url, headers=headers)
+print(response.json())
+```
+
+```javascript JavaScript
+const response = await fetch('https://api.example.com/solicitud/42', {
+  method: 'DELETE',
+  headers: {
+    'Authorization': 'Bearer YOUR_TOKEN'
+  }
+});
+
+const data = await response.json();
+console.log(data);
+```
+
+</RequestExample>
+
+<ResponseExample>
+
+```json Success Response (200)
+{
+  "success": true,
+  "message": "Solicitud eliminada exitosamente",
+  "data": {
+    "mensaje": "Solicitud 'SOL-2026-03-00000042' eliminada exitosamente"
+  }
+}
+```
+
+```json Error Response (409) - Wrong Status
+{
+  "success": false,
+  "message": "Solo se pueden eliminar solicitudes en estado PENDIENTE_APROBACION",
+  "data": null
+}
+```
+
+```json Error Response (409) - Active Missions
+{
+  "success": false,
+  "message": "No se puede eliminar la solicitud porque tiene misiones activas asociadas",
+  "data": null
+}
+```
+
+```json Error Response (404)
+{
+  "success": false,
+  "message": "Solicitud con Id 999 no encontrada",
+  "data": null
+}
+```
+
+</ResponseExample>
+
+## What Gets Deleted
+
+When a solicitud is deleted, the following records are soft-deleted:
+
+1. **Solicitud record** - Main solicitud record
+2. **Status history** - All entries in `HistoricoEstadoSolicitud`
+3. **Location details** - All entries in `DetalleLugarSolicitud`
+
+<Note>
+  The delete operation is a soft delete, meaning records are marked as deleted (`Eliminado = 1`) but remain in the database for audit purposes.
+</Note>
+
+## Validation Flow
+
+Before deletion, the system validates:
+
+1. **Solicitud exists** and is not already deleted
+2. **Status is PENDIENTE_APROBACION** - No other status allows deletion
+3. **No active missions** - Checks for missions with status:
+   - PENDIENTE
+   - ASIGNADA
+   - EN_CURSO
+
+If any validation fails, the deletion is rejected with a 409 Conflict error.
+
+## Alternative to Deletion
+
+Instead of deleting a solicitud, consider:
+
+- **Cancelling** - Use the [Cancel Solicitud](/api/solicitud/cancel) endpoint to cancel with a reason
+- **Rejecting** - If you're the approver, use the [Reject Solicitud](/api/solicitud/reject) endpoint
+
+Both cancellation and rejection maintain a complete audit trail and are more appropriate for most use cases.
+
+<Warning>
+  This operation cannot be undone through the API. Deleted solicitudes can only be restored by direct database access.
+</Warning>

@@ -1,0 +1,67 @@
+---
+title: 'Driver Endpoints Overview'
+description: 'Complete CRUD operations for managing drivers with external DUI validation'
+---
+
+The Driver API provides comprehensive endpoints for managing drivers in the system. It includes full CRUD operations, external DUI (national ID) validation, and availability management.
+
+## Key Features
+
+- **Complete CRUD Operations**: Create, read, update, and delete driver records
+- **External DUI Integration**: Query national ID database for automatic data population
+- **Simplified Creation**: Create drivers using DUI lookup to auto-fill personal information
+- **Availability Management**: Dedicated endpoint for quick status updates
+- **Advanced Filtering**: Search by name, DUI, department, and availability status
+- **Paginated Listings**: Efficient data retrieval with pagination support
+- **Full Listings**: Non-paginated endpoint for dropdowns and select components
+
+## Automatic Record Creation
+
+When creating a driver, the system automatically creates related records in a single transaction:
+- **User** account
+- **Profile** record
+- **ProfileRole** assignment (MOTORISTA role)
+- **DriverProfileDetail** with license and department information
+
+## Endpoints
+
+<CardGroup cols={2}>
+  <Card title="Create Driver" icon="plus" href="/api/motorista/create">
+    Create a complete driver record or simplified creation via DUI lookup
+  </Card>
+  
+  <Card title="List Drivers" icon="list" href="/api/motorista/list">
+    Retrieve drivers with pagination and filtering options
+  </Card>
+  
+  <Card title="Get Driver" icon="user" href="/api/motorista/get">
+    Get detailed information about a specific driver
+  </Card>
+  
+  <Card title="Update Driver" icon="pen" href="/api/motorista/update">
+    Update driver information and settings
+  </Card>
+  
+  <Card title="Delete Driver" icon="trash" href="/api/motorista/delete">
+    Soft delete a driver record
+  </Card>
+</CardGroup>
+
+## Data Validation
+
+All driver endpoints enforce strict validation:
+- **Email**: Must be unique and follow valid email format
+- **DUI**: Must be unique and match format `########-#` (8 digits, hyphen, 1 digit)
+- **IMEI**: Must be unique if provided
+- **License Dates**: Must follow `YYYY-MM-DD` format
+- **Foreign Keys**: Department, license type, and availability references must exist
+
+## Soft Deletion
+
+Driver deletion is logical, not physical. When deleting a driver:
+- DriverProfileDetail is marked as deleted
+- ProfileRole is marked as deleted
+- Profile is marked as deleted
+- User account is marked as deleted
+- No records are physically removed from the database
+- Drivers with active missions cannot be deleted

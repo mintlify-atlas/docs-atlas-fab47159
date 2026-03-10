@@ -1,0 +1,498 @@
+---
+title: "Create Solicitud"
+api: "POST /solicitud"
+description: "Create a new transport solicitud"
+---
+
+## Overview
+
+Creates a new transport solicitud (request) in the system. The solicitud is created directly in **PENDIENTE_APROBACION** status.
+
+<Note>
+  Missions are **not** created at this stage. The approver will create missions later in the Missions module after approval.
+</Note>
+
+## Authentication
+
+Requires valid authentication token.
+
+## Request Body
+
+<ParamField body="idUsuarioSolicitante" type="integer" required>
+  ID of the requester profile (FK to Perfil)
+</ParamField>
+
+<ParamField body="idDepartamentoSolicitante" type="integer" required>
+  ID of the requesting department (FK to Departamento)
+</ParamField>
+
+<ParamField body="idUsuarioAprobador" type="integer" required>
+  ID of the approver profile (FK to Perfil). Must be different from requester.
+</ParamField>
+
+<ParamField body="idTipoPrioridadSolicitud" type="integer" required>
+  ID of the priority type (FK to TipoPrioridadSolicitud)
+</ParamField>
+
+<ParamField body="idTipoServicioSolicitud" type="integer" required>
+  ID of the service type (FK to TipoServicioSolicitud)
+</ParamField>
+
+<ParamField body="asunto" type="string" required>
+  Subject of the solicitud (5-250 characters)
+</ParamField>
+
+<ParamField body="descripcion" type="string">
+  Detailed description of the solicitud
+</ParamField>
+
+<ParamField body="justificacion" type="string">
+  Justification for the transport request
+</ParamField>
+
+<ParamField body="cantidadPasajeros" type="integer" required>
+  Number of passengers (minimum 0)
+</ParamField>
+
+<ParamField body="nombresPasajeros" type="string">
+  Names of passengers
+</ParamField>
+
+<ParamField body="fechaServicioRequerido" type="date" required>
+  Date when service is required (YYYY-MM-DD format, cannot be in the past)
+</ParamField>
+
+<ParamField body="horaServicioRequerido" type="time" required>
+  Time when service is required (HH:MM format)
+</ParamField>
+
+<ParamField body="observaciones" type="string">
+  Additional observations
+</ParamField>
+
+<ParamField body="lugares" type="array" required>
+  List of locations (minimum 1 required)
+  
+  <Expandable title="Location Object Properties">
+    <ParamField body="idLugar" type="integer" required>
+      ID of the location (FK to Lugares)
+    </ParamField>
+    
+    <ParamField body="esOrigen" type="boolean" required>
+      True if this is the origin point
+    </ParamField>
+    
+    <ParamField body="orden" type="integer" required>
+      Order of the stop (0=origin, 1=first stop, etc.). Must be consecutive starting from 0.
+    </ParamField>
+    
+    <ParamField body="descripcion" type="string">
+      Description of what to do at this location (max 500 characters)
+    </ParamField>
+    
+    <ParamField body="horaEstimadaLlegada" type="time">
+      Estimated arrival time (HH:MM format)
+    </ParamField>
+    
+    <ParamField body="requiereRetorno" type="boolean" default={false}>
+      True if return trip is required from this location. Origin cannot require return.
+    </ParamField>
+    
+    <ParamField body="horaEstimadaRetorno" type="time">
+      Estimated return time (HH:MM format). Required if requiereRetorno=true. Must be after horaEstimadaLlegada.
+    </ParamField>
+  </Expandable>
+</ParamField>
+
+## Business Rules
+
+- The solicitud code is auto-generated: `SOL-{YEAR}-{MONTH}-{CORRELATIVE}`
+- The requester and approver must be different people
+- Service date cannot be in the past
+- At least one location must be provided
+- Only one location can be marked as origin (esOrigen=true)
+- Origin location cannot require return (requiereRetorno must be false)
+- If requiereRetorno=true, horaEstimadaRetorno is mandatory
+- Location order values must be unique and consecutive starting from 0
+- Email notifications are sent to:
+  - Requester: Confirmation email
+  - Approver: Pending approval notification
+
+## Response
+
+<ResponseField name="success" type="boolean">
+  Indicates if the operation was successful
+</ResponseField>
+
+<ResponseField name="message" type="string">
+  Success message
+</ResponseField>
+
+<ResponseField name="data" type="object">
+  The created solicitud object
+  
+  <Expandable title="Solicitud Object Properties">
+    <ResponseField name="Id" type="integer">
+      Unique solicitud ID
+    </ResponseField>
+    
+    <ResponseField name="CodigoSolicitud" type="string">
+      Auto-generated solicitud code (e.g., SOL-2026-03-00000001)
+    </ResponseField>
+    
+    <ResponseField name="IdUsuarioSolicitante" type="integer">
+      Requester profile ID
+    </ResponseField>
+    
+    <ResponseField name="NombreSolicitante" type="string">
+      Requester full name
+    </ResponseField>
+    
+    <ResponseField name="EmailSolicitante" type="string">
+      Requester email
+    </ResponseField>
+    
+    <ResponseField name="IdDepartamentoSolicitante" type="integer">
+      Requesting department ID
+    </ResponseField>
+    
+    <ResponseField name="NombreDepartamento" type="string">
+      Department name
+    </ResponseField>
+    
+    <ResponseField name="IdUsuarioAprobador" type="integer">
+      Approver profile ID
+    </ResponseField>
+    
+    <ResponseField name="NombreAprobador" type="string">
+      Approver full name
+    </ResponseField>
+    
+    <ResponseField name="EmailAprobador" type="string">
+      Approver email
+    </ResponseField>
+    
+    <ResponseField name="IdTipoPrioridadSolicitud" type="integer">
+      Priority type ID
+    </ResponseField>
+    
+    <ResponseField name="NombrePrioridad" type="string">
+      Priority name
+    </ResponseField>
+    
+    <ResponseField name="IdTipoServicioSolicitud" type="integer">
+      Service type ID
+    </ResponseField>
+    
+    <ResponseField name="NombreTipoServicio" type="string">
+      Service type name
+    </ResponseField>
+    
+    <ResponseField name="Asunto" type="string">
+      Subject
+    </ResponseField>
+    
+    <ResponseField name="Descripcion" type="string">
+      Description
+    </ResponseField>
+    
+    <ResponseField name="Justificacion" type="string">
+      Justification
+    </ResponseField>
+    
+    <ResponseField name="CantidadPasajeros" type="integer">
+      Number of passengers
+    </ResponseField>
+    
+    <ResponseField name="NombresPasajeros" type="string">
+      Passenger names
+    </ResponseField>
+    
+    <ResponseField name="FechaServicioRequerido" type="date">
+      Required service date
+    </ResponseField>
+    
+    <ResponseField name="HoraServicioRequerido" type="time">
+      Required service time
+    </ResponseField>
+    
+    <ResponseField name="Observaciones" type="string">
+      Observations
+    </ResponseField>
+    
+    <ResponseField name="IdEstadoActual" type="integer">
+      Current status ID
+    </ResponseField>
+    
+    <ResponseField name="CodigoEstadoActual" type="string">
+      Current status code (e.g., PENDIENTE_APROBACION)
+    </ResponseField>
+    
+    <ResponseField name="NombreEstadoActual" type="string">
+      Current status name
+    </ResponseField>
+    
+    <ResponseField name="ColorEstadoActual" type="string">
+      Status color (hex code)
+    </ResponseField>
+    
+    <ResponseField name="FechaHoraCreacion" type="datetime">
+      Creation timestamp
+    </ResponseField>
+    
+    <ResponseField name="FechaHoraActualizacion" type="datetime">
+      Last update timestamp
+    </ResponseField>
+    
+    <ResponseField name="lugares" type="array">
+      Array of location objects with full details including location name, address, coordinates
+    </ResponseField>
+    
+    <ResponseField name="misiones" type="array">
+      Array of associated missions (empty at creation)
+    </ResponseField>
+  </Expandable>
+</ResponseField>
+
+## Status Codes
+
+<ResponseField name="201" type="Created">
+  Solicitud created successfully
+</ResponseField>
+
+<ResponseField name="400" type="Bad Request">
+  Validation error (invalid fields, requester = approver, invalid location data)
+</ResponseField>
+
+<ResponseField name="409" type="Conflict">
+  Conflict error (duplicate, business rule violation)
+</ResponseField>
+
+<ResponseField name="422" type="Unprocessable Entity">
+  Business logic validation error (date in past, invalid location rules)
+</ResponseField>
+
+<ResponseField name="500" type="Internal Server Error">
+  Server error
+</ResponseField>
+
+<RequestExample>
+
+```bash cURL
+curl -X POST https://api.example.com/solicitud \
+  -H "Authorization: Bearer YOUR_TOKEN" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "idUsuarioSolicitante": 1,
+    "idDepartamentoSolicitante": 2,
+    "idUsuarioAprobador": 3,
+    "idTipoPrioridadSolicitud": 2,
+    "idTipoServicioSolicitud": 1,
+    "asunto": "Transporte de personal a sede central",
+    "descripcion": "Se requiere transporte para personal de la unidad",
+    "justificacion": "Reunión de coordinación institucional",
+    "cantidadPasajeros": 5,
+    "nombresPasajeros": "Juan Pérez, María López, Carlos Rivas",
+    "fechaServicioRequerido": "2026-04-15",
+    "horaServicioRequerido": "08:00",
+    "observaciones": "Llevar a las 8am y regresar a las 5pm",
+    "lugares": [
+      {
+        "idLugar": 5,
+        "esOrigen": true,
+        "orden": 0,
+        "descripcion": "Sede central - Salida"
+      },
+      {
+        "idLugar": 12,
+        "esOrigen": false,
+        "orden": 1,
+        "descripcion": "Primer destino",
+        "horaEstimadaLlegada": "10:30",
+        "requiereRetorno": true,
+        "horaEstimadaRetorno": "12:00"
+      }
+    ]
+  }'
+```
+
+```python Python
+import requests
+
+url = "https://api.example.com/solicitud"
+headers = {
+    "Authorization": "Bearer YOUR_TOKEN",
+    "Content-Type": "application/json"
+}
+data = {
+    "idUsuarioSolicitante": 1,
+    "idDepartamentoSolicitante": 2,
+    "idUsuarioAprobador": 3,
+    "idTipoPrioridadSolicitud": 2,
+    "idTipoServicioSolicitud": 1,
+    "asunto": "Transporte de personal a sede central",
+    "descripcion": "Se requiere transporte para personal de la unidad",
+    "justificacion": "Reunión de coordinación institucional",
+    "cantidadPasajeros": 5,
+    "nombresPasajeros": "Juan Pérez, María López, Carlos Rivas",
+    "fechaServicioRequerido": "2026-04-15",
+    "horaServicioRequerido": "08:00",
+    "observaciones": "Llevar a las 8am y regresar a las 5pm",
+    "lugares": [
+        {
+            "idLugar": 5,
+            "esOrigen": True,
+            "orden": 0,
+            "descripcion": "Sede central - Salida"
+        },
+        {
+            "idLugar": 12,
+            "esOrigen": False,
+            "orden": 1,
+            "descripcion": "Primer destino",
+            "horaEstimadaLlegada": "10:30",
+            "requiereRetorno": True,
+            "horaEstimadaRetorno": "12:00"
+        }
+    ]
+}
+
+response = requests.post(url, json=data, headers=headers)
+print(response.json())
+```
+
+```javascript JavaScript
+const response = await fetch('https://api.example.com/solicitud', {
+  method: 'POST',
+  headers: {
+    'Authorization': 'Bearer YOUR_TOKEN',
+    'Content-Type': 'application/json'
+  },
+  body: JSON.stringify({
+    idUsuarioSolicitante: 1,
+    idDepartamentoSolicitante: 2,
+    idUsuarioAprobador: 3,
+    idTipoPrioridadSolicitud: 2,
+    idTipoServicioSolicitud: 1,
+    asunto: 'Transporte de personal a sede central',
+    descripcion: 'Se requiere transporte para personal de la unidad',
+    justificacion: 'Reunión de coordinación institucional',
+    cantidadPasajeros: 5,
+    nombresPasajeros: 'Juan Pérez, María López, Carlos Rivas',
+    fechaServicioRequerido: '2026-04-15',
+    horaServicioRequerido: '08:00',
+    observaciones: 'Llevar a las 8am y regresar a las 5pm',
+    lugares: [
+      {
+        idLugar: 5,
+        esOrigen: true,
+        orden: 0,
+        descripcion: 'Sede central - Salida'
+      },
+      {
+        idLugar: 12,
+        esOrigen: false,
+        orden: 1,
+        descripcion: 'Primer destino',
+        horaEstimadaLlegada: '10:30',
+        requiereRetorno: true,
+        horaEstimadaRetorno: '12:00'
+      }
+    ]
+  })
+});
+
+const data = await response.json();
+console.log(data);
+```
+
+</RequestExample>
+
+<ResponseExample>
+
+```json Success Response (201)
+{
+  "success": true,
+  "message": "Solicitud creada exitosamente",
+  "data": {
+    "Id": 42,
+    "CodigoSolicitud": "SOL-2026-03-00000042",
+    "IdUsuarioSolicitante": 1,
+    "NombreSolicitante": "Juan Pérez",
+    "EmailSolicitante": "juan.perez@example.com",
+    "IdDepartamentoSolicitante": 2,
+    "NombreDepartamento": "Logística",
+    "IdUsuarioAprobador": 3,
+    "NombreAprobador": "María González",
+    "EmailAprobador": "maria.gonzalez@example.com",
+    "IdTipoPrioridadSolicitud": 2,
+    "NombrePrioridad": "Normal",
+    "IdTipoServicioSolicitud": 1,
+    "NombreTipoServicio": "Transporte de personal",
+    "Asunto": "Transporte de personal a sede central",
+    "Descripcion": "Se requiere transporte para personal de la unidad",
+    "Justificacion": "Reunión de coordinación institucional",
+    "CantidadPasajeros": 5,
+    "NombresPasajeros": "Juan Pérez, María López, Carlos Rivas",
+    "FechaServicioRequerido": "2026-04-15",
+    "HoraServicioRequerido": "08:00:00",
+    "Observaciones": "Llevar a las 8am y regresar a las 5pm",
+    "IdEstadoActual": 1,
+    "CodigoEstadoActual": "PENDIENTE_APROBACION",
+    "NombreEstadoActual": "Pendiente de Aprobación",
+    "ColorEstadoActual": "#FFA500",
+    "EsEstadoFinal": false,
+    "FechaHoraCreacion": "2026-03-10T14:30:00",
+    "FechaHoraActualizacion": "2026-03-10T14:30:00",
+    "lugares": [
+      {
+        "Id": 1,
+        "IdLugar": 5,
+        "NombreLugar": "Sede Central",
+        "DireccionLugar": "Av. Principal 123",
+        "EsOrigen": true,
+        "Orden": 0,
+        "Descripcion": "Sede central - Salida",
+        "HoraEstimadaLlegada": null,
+        "RequiereRetorno": false,
+        "HoraEstimadaRetorno": null
+      },
+      {
+        "Id": 2,
+        "IdLugar": 12,
+        "NombreLugar": "Oficina Regional Norte",
+        "DireccionLugar": "Calle Norte 456",
+        "EsOrigen": false,
+        "Orden": 1,
+        "Descripcion": "Primer destino",
+        "HoraEstimadaLlegada": "10:30:00",
+        "RequiereRetorno": true,
+        "HoraEstimadaRetorno": "12:00:00"
+      }
+    ],
+    "misiones": []
+  }
+}
+```
+
+```json Error Response (400)
+{
+  "success": false,
+  "message": "El solicitante y el aprobador no pueden ser la misma persona",
+  "data": null
+}
+```
+
+```json Error Response (422)
+{
+  "success": false,
+  "message": "La fecha de servicio requerido no puede ser en el pasado",
+  "data": null
+}
+```
+
+</ResponseExample>
+
+<Warning>
+  The requester and approver must be different users. The system will reject requests where both IDs are the same.
+</Warning>

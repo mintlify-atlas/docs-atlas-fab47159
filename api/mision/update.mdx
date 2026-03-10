@@ -1,0 +1,169 @@
+---
+title: 'Update Mission'
+api: 'PUT /mision/{id}'
+description: 'Update a scheduled mission'
+---
+
+## Update Mission
+
+Updates an existing mission in `PROGRAMADA` (scheduled) state.
+
+### Path Parameters
+
+<ParamField path="id" type="integer" required>
+  ID of the mission to update.
+</ParamField>
+
+### Request Body
+
+All fields are optional. Only provided fields will be updated.
+
+<ParamField body="idLugarOrigen" type="integer">
+  ID of the origin location. Must exist if provided.
+</ParamField>
+
+<ParamField body="idLugarDestino" type="integer">
+  ID of the main destination location. Must exist if provided.
+</ParamField>
+
+<ParamField body="descripcion" type="string">
+  Description of the mission. Maximum 500 characters.
+</ParamField>
+
+<ParamField body="fechaProgramada" type="date">
+  Scheduled date for the mission in `YYYY-MM-DD` format.
+</ParamField>
+
+<ParamField body="horaSalidaProgramada" type="string">
+  Scheduled departure time in `HH:MM:SS` or `HH:MM` format.
+</ParamField>
+
+<ParamField body="horaLlegadaEstimada" type="string">
+  Estimated arrival time in `HH:MM:SS` or `HH:MM` format.
+</ParamField>
+
+<ParamField body="observaciones" type="string">
+  General observations about the mission.
+</ParamField>
+
+<ParamField body="paradas" type="array">
+  List of stops. If provided, replaces all existing stops.
+  
+  <Expandable title="Stop Object">
+    <ParamField body="idLugarDestino" type="integer" required>
+      ID of the destination location for this stop.
+    </ParamField>
+    
+    <ParamField body="numeroParada" type="integer" required>
+      Stop order number (must be >= 1).
+    </ParamField>
+    
+    <ParamField body="descripcion" type="string">
+      Description of the stop. Maximum 500 characters.
+    </ParamField>
+    
+    <ParamField body="esParadaFinal" type="boolean" required>
+      Whether this is the final stop of the mission.
+    </ParamField>
+    
+    <ParamField body="fechaHoraLlegadaEstimada" type="string">
+      Estimated arrival date and time in `YYYY-MM-DD HH:MM:SS` format.
+    </ParamField>
+  </Expandable>
+</ParamField>
+
+### Response
+
+<ResponseField name="success" type="boolean">
+  Indicates if the request was successful.
+</ResponseField>
+
+<ResponseField name="message" type="string">
+  Response message: "Misión actualizada exitosamente"
+</ResponseField>
+
+<ResponseField name="data" type="object">
+  The updated mission object with all current details.
+</ResponseField>
+
+### Validations
+
+- Mission must be in `PROGRAMADA` state
+- If stops list is provided, it replaces all existing stops
+
+<RequestExample>
+```bash cURL - Basic Update
+curl -X PUT "https://api.example.com/mision/1" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "descripcion": "Traslado de personal al aeropuerto - URGENTE",
+    "horaSalidaProgramada": "07:30:00",
+    "observaciones": "Salida adelantada por vuelo temprano"
+  }'
+```
+
+```bash cURL - Update with Stops
+curl -X PUT "https://api.example.com/mision/1" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "descripcion": "Ruta modificada con nueva parada",
+    "paradas": [
+      {
+        "idLugarDestino": 2,
+        "numeroParada": 1,
+        "descripcion": "Primera parada - Oficina central",
+        "esParadaFinal": false,
+        "fechaHoraLlegadaEstimada": "2025-06-15 09:00:00"
+      },
+      {
+        "idLugarDestino": 3,
+        "numeroParada": 2,
+        "descripcion": "Destino final - Aeropuerto",
+        "esParadaFinal": true,
+        "fechaHoraLlegadaEstimada": "2025-06-15 10:00:00"
+      }
+    ]
+  }'
+```
+</RequestExample>
+
+<ResponseExample>
+```json 200 - Success
+{
+  "success": true,
+  "message": "Misión actualizada exitosamente",
+  "data": {
+    "idMision": 1,
+    "idSolicitud": 1,
+    "descripcion": "Traslado de personal al aeropuerto - URGENTE",
+    "fechaProgramada": "2025-06-15",
+    "horaSalidaProgramada": "07:30:00",
+    "horaLlegadaEstimada": "09:30:00",
+    "observaciones": "Salida adelantada por vuelo temprano",
+    "idEstadoMision": 1,
+    "codigoEstado": "PROGRAMADA"
+  }
+}
+```
+
+```json 404 - Not Found
+{
+  "success": false,
+  "message": "Misión no encontrada"
+}
+```
+
+```json 409 - Invalid State
+{
+  "success": false,
+  "message": "Solo se pueden actualizar misiones en estado PROGRAMADA"
+}
+```
+
+```json 422 - Validation Error
+{
+  "success": false,
+  "message": "El lugar de destino no existe"
+}
+```
+</ResponseExample>

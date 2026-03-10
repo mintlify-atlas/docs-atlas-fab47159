@@ -1,0 +1,279 @@
+---
+title: Mission Status Catalog
+description: Manage mission status catalog for tracking mission lifecycle states
+---
+
+# Mission Status Catalog API
+
+Manage the catalog of mission statuses (EstadoMision) used to track the lifecycle of transportation missions.
+
+**Base Path:** `/estado-mision`
+
+## Endpoints
+
+### Create Mission Status
+
+```http
+POST /estado-mision/
+```
+
+Creates a new mission status.
+
+#### Request Body
+
+```json
+{
+  "codigo": "EN_CURSO",
+  "nombre": "En Curso",
+  "descripcion": "La misión está actualmente en curso"
+}
+```
+
+#### Field Validations
+
+- **codigo** (required): Unique, uppercase, no spaces
+- **nombre** (required): Unique across active records
+- **descripcion** (optional): Max 250 characters
+
+#### Response
+
+```json
+{
+  "success": true,
+  "message": "Estado de misión creado exitosamente",
+  "data": {
+    "IdEstadoMision": 1,
+    "Codigo": "EN_CURSO",
+    "Nombre": "En Curso",
+    "Descripcion": "La misión está actualmente en curso",
+    "EsActivo": true
+  }
+}
+```
+
+---
+
+### Get Mission Status by ID
+
+```http
+GET /estado-mision/{id_estado_mision}
+```
+
+Retrieves a specific mission status by ID. Only returns active records.
+
+#### Path Parameters
+
+- **id_estado_mision** (integer, required): Mission status ID
+
+#### Response
+
+```json
+{
+  "success": true,
+  "message": "Estado de misión obtenido exitosamente",
+  "data": {
+    "IdEstadoMision": 1,
+    "Codigo": "EN_CURSO",
+    "Nombre": "En Curso",
+    "Descripcion": "La misión está actualmente en curso",
+    "EsActivo": true
+  }
+}
+```
+
+---
+
+### List Mission Statuses (Paginated)
+
+```http
+GET /estado-mision/
+```
+
+Lists mission statuses with pagination and optional filters.
+
+#### Query Parameters
+
+- **pagina** (integer, optional, default: 1): Page number (min: 1)
+- **por_pagina** (integer, optional, default: 10): Records per page (min: 1, max: 100)
+- **codigo** (string, optional): Filter by code (partial match)
+- **nombre** (string, optional): Filter by name (partial match)
+- **busqueda** (string, optional): General search in code, name, and description
+
+#### Response
+
+```json
+{
+  "success": true,
+  "message": "Listado de estados de misión obtenido exitosamente",
+  "data": {
+    "items": [
+      {
+        "IdEstadoMision": 1,
+        "Codigo": "PENDIENTE",
+        "Nombre": "Pendiente",
+        "Descripcion": "Misión pendiente de iniciar",
+        "EsActivo": true
+      },
+      {
+        "IdEstadoMision": 2,
+        "Codigo": "EN_CURSO",
+        "Nombre": "En Curso",
+        "Descripcion": "Misión en progreso",
+        "EsActivo": true
+      }
+    ],
+    "total": 5,
+    "pagina": 1,
+    "porPagina": 10,
+    "totalPaginas": 1
+  }
+}
+```
+
+---
+
+### List All Mission Statuses (No Pagination)
+
+```http
+GET /estado-mision/todos/lista
+```
+
+Retrieves all active mission statuses without pagination. Ideal for dropdowns and select components.
+
+#### Query Parameters
+
+- **codigo** (string, optional): Filter by code
+- **nombre** (string, optional): Filter by name
+- **busqueda** (string, optional): General search
+
+#### Response
+
+```json
+{
+  "success": true,
+  "message": "Listado completo de estados de misión obtenido exitosamente",
+  "data": [
+    {
+      "IdEstadoMision": 1,
+      "Codigo": "PENDIENTE",
+      "Nombre": "Pendiente"
+    },
+    {
+      "IdEstadoMision": 2,
+      "Codigo": "EN_CURSO",
+      "Nombre": "En Curso"
+    }
+  ]
+}
+```
+
+---
+
+### Update Mission Status
+
+```http
+PUT /estado-mision/{id_estado_mision}
+```
+
+Updates an existing mission status. Only provided fields are updated.
+
+#### Path Parameters
+
+- **id_estado_mision** (integer, required): Mission status ID
+
+#### Request Body
+
+```json
+{
+  "nombre": "En Progreso",
+  "descripcion": "La misión está en progreso actualmente"
+}
+```
+
+#### Validations
+
+- Record must exist and be active
+- If changing `codigo`, must be unique
+- If changing `nombre`, must be unique
+
+#### Response
+
+```json
+{
+  "success": true,
+  "message": "Estado de misión actualizado exitosamente",
+  "data": {
+    "IdEstadoMision": 2,
+    "Codigo": "EN_CURSO",
+    "Nombre": "En Progreso",
+    "Descripcion": "La misión está en progreso actualmente",
+    "EsActivo": true
+  }
+}
+```
+
+---
+
+### Delete Mission Status
+
+```http
+DELETE /estado-mision/{id_estado_mision}
+```
+
+Performs a soft delete on a mission status. Cannot delete if there are active missions using this status.
+
+#### Path Parameters
+
+- **id_estado_mision** (integer, required): Mission status ID
+
+#### Validations
+
+- Record must exist and be active
+- Cannot have active missions associated
+
+#### Response
+
+```json
+{
+  "success": true,
+  "message": "Estado de misión eliminado exitosamente",
+  "data": {
+    "IdEstadoMision": 1,
+    "EsActivo": false
+  }
+}
+```
+
+---
+
+## Error Responses
+
+### 404 Not Found
+
+```json
+{
+  "success": false,
+  "message": "Estado de misión no encontrado",
+  "data": null
+}
+```
+
+### 409 Conflict
+
+```json
+{
+  "success": false,
+  "message": "Ya existe un estado de misión con ese código",
+  "data": null
+}
+```
+
+### 500 Internal Server Error
+
+```json
+{
+  "success": false,
+  "message": "Error interno del servidor",
+  "data": null
+}
+```

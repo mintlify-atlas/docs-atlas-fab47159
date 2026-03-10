@@ -1,80 +1,492 @@
 ---
 title: "Quickstart"
-description: "Start building awesome documentation in minutes"
+description: "Get started with the Solicitud Transporte API in minutes"
 ---
 
-## Get started in three steps
+## Overview
 
-Get your documentation site running locally and make your first customization.
+The Solicitud Transporte API is a FastAPI-based backend system for managing transportation requests and missions for ONI Justicia. This guide will help you set up and run the API locally, and make your first API call.
 
-### Step 1: Set up your local environment
+## Prerequisites
 
-<AccordionGroup>
-  <Accordion icon="copy" title="Clone your docs locally">
-    During the onboarding process, you created a GitHub repository with your docs content if you didn't already have one. You can find a link to this repository in your [dashboard](https://dashboard.mintlify.com).
-    
-    To clone the repository locally so that you can make and preview changes to your docs, follow the [Cloning a repository](https://docs.github.com/en/repositories/creating-and-managing-repositories/cloning-a-repository) guide in the GitHub docs.
-  </Accordion>
-  <Accordion icon="rectangle-terminal" title="Start the preview server">
-    1. Install the Mintlify CLI: `npm i -g mint`
-    2. Navigate to your docs directory and run: `mint dev`
-    3. Open `http://localhost:3000` to see your docs live!
-    
-    <Tip>Your preview updates automatically as you edit files.</Tip>
-  </Accordion>
-</AccordionGroup>
+Before you begin, ensure you have the following installed:
 
-### Step 2: Deploy your changes
+- Python 3.8 or higher
+- pip (Python package manager)
+- SQL Server (for the main database)
+- MongoDB (optional, for logging)
+- Git (for cloning the repository)
 
-<AccordionGroup>
-  <Accordion icon="github" title="Install our GitHub app">
-    Install the Mintlify GitHub app from your [dashboard](https://dashboard.mintlify.com/settings/organization/github-app).
-    
-    Our GitHub app automatically deploys your changes to your docs site, so you don't need to manage deployments yourself.
-</Accordion>
-<Accordion icon="palette" title="Update your site name and colors">
-    For a first change, let's update the name and colors of your docs site.
+## Installation
 
-    1. Open `docs.json` in your editor.
-    2. Change the `"name"` field to your project name.
-    3. Update the `"colors"` to match your brand.
-    4. Save and see your changes instantly at `http://localhost:3000`.
+<Steps>
+  <Step title="Clone the repository">
+    Clone the Solicitud Transporte API repository to your local machine:
 
-    <Tip>Try changing the primary color to see an immediate difference!</Tip>
-  </Accordion>
-</AccordionGroup>
+    ```bash
+    git clone https://github.com/pedro-navarrete/Solicitud_Transporte_Api_V2.git
+    cd Solicitud_Transporte_Api_V2
+    ```
+  </Step>
 
-### Step 3: Go live
+  <Step title="Install dependencies">
+    Install the required Python packages using pip:
 
-<Accordion icon="rocket" title="Publish your docs">
-  1. Commit and push your changes.
-  2. Your docs will update and be live in moments!
-</Accordion>
+    ```bash
+    pip install -r requirements.txt
+    ```
 
-## Next steps
+    The main dependencies include:
+    - **fastapi** - Modern web framework for building APIs
+    - **pymssql** - SQL Server database driver
+    - **pydantic** - Data validation using Python type annotations
+    - **python-dotenv** - Environment variable management
+    - **requests** - HTTP library for making API calls
+    - **jinja2** - Templating engine
+  </Step>
 
-Now that you have your docs running, explore these key features:
+  <Step title="Configure environment variables">
+    Create a `.env` file in the root directory with the following configuration:
 
-<CardGroup cols={2}>
+    ```bash .env
+    # Application Settings
+    API_TITLE=Backend ONI Justicia
+    API_VERSION=1.0.0
+    API_DEBUG=true
+    API_LOG_LEVEL=INFO
+    API_LOG_FORMAT=text
+    TIMEZONE=America/El_Salvador
 
-<Card title="Write Content" icon="pen-to-square" href="/essentials/markdown">
-  Learn MDX syntax and start writing your documentation.
-</Card>
+    # SQL Server Configuration
+    SQL_HOST=localhost
+    SQL_PORT=1433
+    SQL_NAME=your_database_name
+    SQL_USER=your_username
+    SQL_PASSWORD=your_password
 
-<Card title="Customize style" icon="palette" href="/essentials/settings">
-  Make your docs match your brand perfectly.
-</Card>
+    # MongoDB Configuration (Optional)
+    DB_URL=mongodb://localhost:27017/dev_oni_justicia
+    # OR use individual variables:
+    DB_HOST=localhost
+    DB_PORT=27017
+    DB_NAME=dev_oni_justicia
+    DB_USER=admin
+    DB_PASSWORD=your_mongodb_password
+    DB_AUTH_DB=admin
 
-<Card title="Add code examples" icon="square-code" href="/essentials/code">
-  Include syntax-highlighted code blocks.
-</Card>
+    # JWT Configuration
+    JWT_SECRET=your-secret-key-here-change-in-production
+    JWT_ALGORITHM=HS256
+    JWT_ACCESS_TOKEN_EXP_VALUE=60
+    JWT_ACCESS_TOKEN_EXP_UNIT=minutes
+    JWT_REFRESH_TOKEN_EXP_VALUE=24
+    JWT_REFRESH_TOKEN_EXP_UNIT=hours
 
-<Card title="API documentation" icon="code" href="/api-reference/introduction">
-  Auto-generate API docs from OpenAPI specs.
-</Card>
+    # API Credentials
+    API_USER=api_user
+    API_PASSWORD=your-secure-password
 
-</CardGroup>
+    # Email Configuration (Optional)
+    EMAIL_USER=your-email@example.com
+    EMAIL_PASSWORD=your-email-password
+    EMAIL_SMTP_HOST=smtp.gmail.com
+    EMAIL_SMTP_PORT=587
+    EMAIL_USE_TLS=true
+
+    # MFA Configuration
+    MFA_ISSUER_NAME=ONI_Justicia
+    MFA_VALID_WINDOW=1
+    ```
+
+    <Warning>
+      Make sure to change the `JWT_SECRET` and `API_PASSWORD` to secure values in production environments. Never commit your `.env` file to version control.
+    </Warning>
+  </Step>
+
+  <Step title="Start the server">
+    Run the FastAPI application using uvicorn:
+
+    ```bash
+    uvicorn main:app --reload --host 0.0.0.0 --port 8000
+    ```
+
+    You should see output similar to:
+
+    ```
+    INFO:     Uvicorn running on http://0.0.0.0:8000 (Press CTRL+C to quit)
+    INFO:     Started reloader process
+    INFO:     Started server process
+    INFO:     Waiting for application startup.
+    ============================================================
+    🚀 Backend ONI Justicia v1.0.0 iniciando...
+    📋 Documentación: /docs | /redoc
+    🔧 Modo debug: True
+    📝 Nivel de log: INFO
+    ============================================================
+    INFO:     Application startup complete.
+    ```
+
+    <Info>
+      The `--reload` flag enables auto-reload on code changes, which is useful for development.
+    </Info>
+  </Step>
+
+  <Step title="Verify the installation">
+    Open your browser and navigate to:
+
+    - **API Root**: [http://localhost:8000](http://localhost:8000) - Welcome page
+    - **Health Check**: [http://localhost:8000/root](http://localhost:8000/root) - API health status
+    - **Swagger UI**: [http://localhost:8000/docs](http://localhost:8000/docs) - Interactive API documentation
+    - **ReDoc**: [http://localhost:8000/redoc](http://localhost:8000/redoc) - Alternative API documentation
+
+    The health check endpoint should return:
+
+    ```json
+    {
+      "exito": true,
+      "mensaje": "API funcionando correctamente",
+      "datos": {
+        "servicio": "Backend ONI Justicia",
+        "version": "1.0.0"
+      }
+    }
+    ```
+  </Step>
+</Steps>
+
+## Making Your First API Call
+
+Now that your API is running, let's make your first request to list transport request statuses.
+
+### Using cURL
+
+```bash
+curl -X GET "http://localhost:8000/estado-solicitud/" \
+  -H "accept: application/json"
+```
+
+### Using Python
+
+```python
+import requests
+
+response = requests.get("http://localhost:8000/estado-solicitud/")
+data = response.json()
+
+if data["exito"]:
+    print("Request statuses:")
+    for estado in data["datos"]:
+        print(f"- {estado['nombre']} ({estado['codigo']})")
+else:
+    print(f"Error: {data['mensaje']}")
+```
+
+### Using JavaScript
+
+```javascript
+fetch('http://localhost:8000/estado-solicitud/')
+  .then(response => response.json())
+  .then(data => {
+    if (data.exito) {
+      console.log('Request statuses:', data.datos);
+    } else {
+      console.error('Error:', data.mensaje);
+    }
+  });
+```
+
+### Expected Response
+
+```json
+{
+  "exito": true,
+  "mensaje": "Listado de estados de solicitud obtenido exitosamente",
+  "datos": [
+    {
+      "idEstadoSolicitud": 1,
+      "nombre": "Pendiente de Aprobación",
+      "codigo": "PENDIENTE_APROBACION",
+      "color": "#FFA500",
+      "descripcion": "Solicitud creada y en espera de aprobación",
+      "esActivo": true
+    },
+    {
+      "idEstadoSolicitud": 2,
+      "nombre": "Aprobada",
+      "codigo": "APROBADA",
+      "color": "#00FF00",
+      "descripcion": "Solicitud aprobada por el supervisor",
+      "esActivo": true
+    }
+  ]
+}
+```
+
+## Creating a Transport Request
+
+Let's create a complete transport request with multiple destinations:
+
+<CodeGroup>
+
+```bash cURL
+curl -X POST "http://localhost:8000/solicitud/" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "idUsuarioSolicitante": 1,
+    "idDepartamentoSolicitante": 2,
+    "idUsuarioAprobador": 3,
+    "idTipoPrioridadSolicitud": 2,
+    "idTipoServicioSolicitud": 1,
+    "asunto": "Transporte de personal a sede central",
+    "descripcion": "Se requiere transporte para personal de la unidad",
+    "justificacion": "Reunión de coordinación institucional",
+    "cantidadPasajeros": 5,
+    "nombresPasajeros": "Juan Pérez, María López, Carlos Rivas",
+    "fechaServicioRequerido": "2026-04-15",
+    "horaServicioRequerido": "08:00",
+    "observaciones": "Llevar a las 8am y regresar a las 5pm",
+    "lugares": [
+      {
+        "idLugar": 5,
+        "esOrigen": true,
+        "orden": 0,
+        "descripcion": "Sede central - Salida"
+      },
+      {
+        "idLugar": 12,
+        "esOrigen": false,
+        "orden": 1,
+        "descripcion": "Primer destino",
+        "horaEstimadaLlegada": "10:30",
+        "requiereRetorno": true,
+        "horaEstimadaRetorno": "12:00"
+      }
+    ]
+  }'
+```
+
+```python Python
+import requests
+from datetime import date, time
+
+url = "http://localhost:8000/solicitud/"
+
+payload = {
+    "idUsuarioSolicitante": 1,
+    "idDepartamentoSolicitante": 2,
+    "idUsuarioAprobador": 3,
+    "idTipoPrioridadSolicitud": 2,
+    "idTipoServicioSolicitud": 1,
+    "asunto": "Transporte de personal a sede central",
+    "descripcion": "Se requiere transporte para personal de la unidad",
+    "justificacion": "Reunión de coordinación institucional",
+    "cantidadPasajeros": 5,
+    "nombresPasajeros": "Juan Pérez, María López, Carlos Rivas",
+    "fechaServicioRequerido": "2026-04-15",
+    "horaServicioRequerido": "08:00",
+    "observaciones": "Llevar a las 8am y regresar a las 5pm",
+    "lugares": [
+        {
+            "idLugar": 5,
+            "esOrigen": True,
+            "orden": 0,
+            "descripcion": "Sede central - Salida"
+        },
+        {
+            "idLugar": 12,
+            "esOrigen": False,
+            "orden": 1,
+            "descripcion": "Primer destino",
+            "horaEstimadaLlegada": "10:30",
+            "requiereRetorno": True,
+            "horaEstimadaRetorno": "12:00"
+        }
+    ]
+}
+
+response = requests.post(url, json=payload)
+result = response.json()
+
+if result["exito"]:
+    solicitud = result["datos"]
+    print(f"Solicitud creada: {solicitud['codigo']}")
+    print(f"ID: {solicitud['idSolicitud']}")
+    print(f"Estado: {solicitud['estado']['nombre']}")
+else:
+    print(f"Error: {result['mensaje']}")
+```
+
+```javascript JavaScript
+const url = 'http://localhost:8000/solicitud/';
+
+const payload = {
+  idUsuarioSolicitante: 1,
+  idDepartamentoSolicitante: 2,
+  idUsuarioAprobador: 3,
+  idTipoPrioridadSolicitud: 2,
+  idTipoServicioSolicitud: 1,
+  asunto: 'Transporte de personal a sede central',
+  descripcion: 'Se requiere transporte para personal de la unidad',
+  justificacion: 'Reunión de coordinación institucional',
+  cantidadPasajeros: 5,
+  nombresPasajeros: 'Juan Pérez, María López, Carlos Rivas',
+  fechaServicioRequerido: '2026-04-15',
+  horaServicioRequerido: '08:00',
+  observaciones: 'Llevar a las 8am y regresar a las 5pm',
+  lugares: [
+    {
+      idLugar: 5,
+      esOrigen: true,
+      orden: 0,
+      descripcion: 'Sede central - Salida'
+    },
+    {
+      idLugar: 12,
+      esOrigen: false,
+      orden: 1,
+      descripcion: 'Primer destino',
+      horaEstimadaLlegada: '10:30',
+      requiereRetorno: true,
+      horaEstimadaRetorno: '12:00'
+    }
+  ]
+};
+
+fetch(url, {
+  method: 'POST',
+  headers: {
+    'Content-Type': 'application/json',
+  },
+  body: JSON.stringify(payload)
+})
+  .then(response => response.json())
+  .then(data => {
+    if (data.exito) {
+      const solicitud = data.datos;
+      console.log(`Solicitud creada: ${solicitud.codigo}`);
+      console.log(`ID: ${solicitud.idSolicitud}`);
+      console.log(`Estado: ${solicitud.estado.nombre}`);
+    } else {
+      console.error(`Error: ${data.mensaje}`);
+    }
+  });
+```
+
+</CodeGroup>
 
 <Note>
-  **Need help?** See our [full documentation](https://mintlify.com/docs) or join our [community](https://mintlify.com/community).
+  When a request is created, it automatically enters the `PENDIENTE_APROBACION` (Pending Approval) state. The system generates a unique code in the format `SOL-{YEAR}-{MONTH}-{CORRELATIVE}`.
 </Note>
+
+## Understanding the Response Format
+
+All API responses follow a consistent structure:
+
+```json
+{
+  "exito": true,
+  "mensaje": "Operation success message",
+  "datos": {
+    // Response data here
+  }
+}
+```
+
+### Success Response
+- **exito**: `true` - Indicates the operation was successful
+- **mensaje**: Description of the operation result
+- **datos**: The actual response data (object or array)
+
+### Error Response
+```json
+{
+  "exito": false,
+  "mensaje": "Error description",
+  "detalle": "Additional error details"
+}
+```
+
+## Common HTTP Status Codes
+
+| Status Code | Meaning | Example |
+|------------|---------|----------|
+| 200 | Success | Data retrieved successfully |
+| 201 | Created | New resource created |
+| 400 | Bad Request | Invalid input data |
+| 404 | Not Found | Resource doesn't exist |
+| 409 | Conflict | Operation conflicts with current state |
+| 422 | Validation Error | Input validation failed |
+| 500 | Internal Error | Server-side error |
+
+## Next Steps
+
+Now that you have the API running, explore these resources:
+
+<CardGroup cols={2}>
+  <Card title="Authentication" icon="lock" href="/authentication">
+    Learn how to secure your API requests with JWT authentication
+  </Card>
+  
+  <Card title="API Reference" icon="book" href="/api/solicitud/overview">
+    Explore all available endpoints and their parameters
+  </Card>
+  
+  <Card title="Request Lifecycle" icon="route" href="/guides/request-lifecycle">
+    Understand the complete workflow from request to completion
+  </Card>
+  
+  <Card title="Error Handling" icon="triangle-exclamation" href="/concepts/error-handling">
+    Learn about error handling and validation
+  </Card>
+</CardGroup>
+
+## Troubleshooting
+
+<AccordionGroup>
+  <Accordion title="Database connection errors">
+    If you're experiencing database connection issues:
+    
+    1. Verify your SQL Server is running
+    2. Check that the credentials in `.env` are correct
+    3. Ensure the database exists
+    4. Test connection using SQL Server Management Studio
+    5. Check firewall rules allow connections on port 1433
+  </Accordion>
+
+  <Accordion title="Module not found errors">
+    If you see `ModuleNotFoundError`:
+    
+    ```bash
+    pip install -r requirements.txt --upgrade
+    ```
+    
+    Make sure you're using Python 3.8 or higher:
+    
+    ```bash
+    python --version
+    ```
+  </Accordion>
+
+  <Accordion title="Port already in use">
+    If port 8000 is already in use, specify a different port:
+    
+    ```bash
+    uvicorn main:app --reload --port 8001
+    ```
+  </Accordion>
+
+  <Accordion title="JWT secret not configured">
+    If you see warnings about missing JWT_SECRET:
+    
+    ```bash
+    # Generate a secure random key
+    python -c "import secrets; print(secrets.token_urlsafe(32))"
+    ```
+    
+    Add the output to your `.env` file as `JWT_SECRET`.
+  </Accordion>
+</AccordionGroup>
+
+<Info>
+  For additional help, check the logs in the console output or review the [Error Handling](/concepts/error-handling) guide.
+</Info>

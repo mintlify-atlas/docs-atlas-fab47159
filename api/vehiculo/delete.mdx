@@ -1,0 +1,230 @@
+---
+title: 'Delete Vehicle'
+api: 'DELETE /vehiculo/{id}'
+description: 'Delete a vehicle (soft delete)'
+---
+
+## Endpoint
+
+<ParamField path="method" type="string" default="DELETE">
+  DELETE
+</ParamField>
+
+<ParamField path="endpoint" type="string">
+  /vehiculo/{id_vehiculo}
+</ParamField>
+
+## Description
+
+Performs a logical deletion (soft delete) of a vehicle. The vehicle record is not physically removed from the database but is marked as deleted. This preserves data integrity and allows for potential recovery.
+
+<Info>
+  **Soft Delete**: The vehicle is marked as deleted (`Eliminado = true`) but remains in the database. This allows for audit trails and potential data recovery.
+</Info>
+
+## Path Parameters
+
+<ParamField path="id_vehiculo" type="integer" required>
+  Unique identifier of the vehicle to delete
+  
+  **Example**: `1`
+</ParamField>
+
+## Validations
+
+<Warning>
+  **Important Validations**
+  
+  - Vehicle must exist and be active (not already deleted)
+  - Vehicle must not have active missions associated with it
+  - If there are active missions, deletion will be blocked with a 409 Conflict error
+</Warning>
+
+## Business Rules
+
+<Steps>
+  <Step title="Check Existence">
+    Verifies the vehicle exists and is currently active
+  </Step>
+  
+  <Step title="Check Active Missions">
+    Validates that the vehicle has no active missions
+  </Step>
+  
+  <Step title="Mark as Deleted">
+    Sets the `Eliminado` flag to `true`
+  </Step>
+  
+  <Step title="Preserve Data">
+    All vehicle data remains in the database for audit purposes
+  </Step>
+</Steps>
+
+## Response
+
+<ResponseField name="success" type="boolean">
+  Indicates if the operation was successful
+</ResponseField>
+
+<ResponseField name="message" type="string">
+  Success message: "Vehículo eliminado exitosamente"
+</ResponseField>
+
+<ResponseField name="data" type="object">
+  The deleted vehicle object with `Eliminado` flag set to `true`
+  
+  <Expandable title="Vehicle Object Properties">
+    <ResponseField name="Id" type="integer">
+      Unique vehicle identifier
+    </ResponseField>
+    
+    <ResponseField name="Placa" type="string">
+      Vehicle license plate
+    </ResponseField>
+    
+    <ResponseField name="Marca" type="string">
+      Vehicle brand
+    </ResponseField>
+    
+    <ResponseField name="Modelo" type="string">
+      Vehicle model
+    </ResponseField>
+    
+    <ResponseField name="Eliminado" type="boolean">
+      Soft delete flag (will be `true` after deletion)
+    </ResponseField>
+    
+    <ResponseField name="FechaHoraActualizacion" type="string">
+      Last update timestamp (will reflect the deletion time)
+    </ResponseField>
+    
+    <ResponseField name="..." type="various">
+      All other vehicle fields
+    </ResponseField>
+  </Expandable>
+</ResponseField>
+
+<ResponseField name="timestamp" type="string">
+  Response timestamp
+</ResponseField>
+
+## Example Request
+
+```bash
+DELETE /vehiculo/1
+```
+
+## Example Response
+
+```json
+{
+  "success": true,
+  "message": "Vehículo eliminado exitosamente",
+  "data": {
+    "Id": 1,
+    "Placa": "P503067",
+    "Marca": "TOYOTA",
+    "Modelo": "HILUX",
+    "Anio": 2020,
+    "Color": "BLANCO",
+    "NumeroMotor": "1GRFE123456",
+    "NumeroChasis": "JT123456789012345",
+    "NumeroVin": "JT123456789012345",
+    "CapacidadPasajeros": 5,
+    "CapacidadCombustibleGalones": 80.0,
+    "KilometrajeActual": 18000,
+    "FechaUltimaRevision": "2024-03-15",
+    "FechaProximoMantenimiento": "2024-09-15",
+    "FechaTarjetaCirculacion": "2023-12-01",
+    "NumeroPolizaSeguro": "POL123456789",
+    "FechaVencimientoSeguro": "2025-12-01",
+    "Observaciones": "Mantenimiento realizado en marzo 2024",
+    "Eliminado": true,
+    "FechaHoraCreacion": "2024-01-15T10:30:00Z",
+    "FechaHoraActualizacion": "2024-03-20T11:15:00Z",
+    "IdClaseVehiculo": 1,
+    "NombreClaseVehiculo": "Pick-up",
+    "IdEstadoVehiculo": 1,
+    "NombreEstadoVehiculo": "Activo",
+    "IdTipoCombustible": 1,
+    "NombreTipoCombustible": "Diesel",
+    "IdMotoristaPorDefecto": 10,
+    "NombreMotoristaPorDefecto": "Juan Pérez",
+    "IdDepartamentoAsignado": 2,
+    "NombreDepartamentoAsignado": "Logística"
+  },
+  "timestamp": "2024-03-20T11:15:00Z"
+}
+```
+
+## Error Responses
+
+<ResponseExample>
+```json 404 Not Found - Vehicle Not Found
+{
+  "success": false,
+  "message": "No se encontró el vehículo con ID 999",
+  "timestamp": "2024-03-20T11:15:00Z"
+}
+```
+
+```json 404 Not Found - Already Deleted
+{
+  "success": false,
+  "message": "El vehículo con ID 1 ya está eliminado",
+  "timestamp": "2024-03-20T11:15:00Z"
+}
+```
+
+```json 409 Conflict - Has Active Missions
+{
+  "success": false,
+  "message": "No se puede eliminar el vehículo porque tiene misiones activas asociadas",
+  "timestamp": "2024-03-20T11:15:00Z"
+}
+```
+
+```json 500 Internal Server Error
+{
+  "success": false,
+  "message": "Error interno del servidor",
+  "timestamp": "2024-03-20T11:15:00Z"
+}
+```
+</ResponseExample>
+
+## Soft Delete Benefits
+
+<CardGroup cols={2}>
+  <Card title="Data Preservation" icon="database">
+    All vehicle data remains in the database for historical records
+  </Card>
+  
+  <Card title="Audit Trail" icon="clock-rotate-left">
+    Maintains complete audit trail of vehicle lifecycle
+  </Card>
+  
+  <Card title="Recovery" icon="rotate-left">
+    Enables potential recovery of accidentally deleted vehicles
+  </Card>
+  
+  <Card title="Referential Integrity" icon="link">
+    Preserves relationships with other records (missions, maintenance, etc.)
+  </Card>
+</CardGroup>
+
+## Reactivation
+
+<Info>
+  If you need to reactivate a deleted vehicle, you can create a new vehicle with the same plate using the `POST /vehiculo` endpoint. The system will automatically reactivate the existing deleted record instead of creating a duplicate.
+</Info>
+
+## When Deletion is Blocked
+
+Deletion is prevented when:
+
+1. **Active Missions**: The vehicle has one or more active missions assigned
+2. **Already Deleted**: The vehicle is already marked as deleted
+3. **Not Found**: The vehicle ID doesn't exist in the system
+
+In these cases, appropriate error responses are returned with specific status codes and messages.

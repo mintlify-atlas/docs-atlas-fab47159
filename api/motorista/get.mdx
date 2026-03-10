@@ -1,0 +1,220 @@
+---
+title: 'Get Driver'
+api: 'GET /motorista/{id}'
+description: 'Retrieve detailed information about a specific driver'
+---
+
+Retrieves complete information for a specific driver, including profile data and driver-specific details.
+
+## Endpoint
+
+```
+GET /motorista/{id_perfil}
+```
+
+## Path Parameters
+
+<ParamField path="id_perfil" type="integer" required>
+  The unique profile ID of the driver
+</ParamField>
+
+## Response
+
+<ResponseField name="success" type="boolean">
+  Indicates if the operation was successful
+</ResponseField>
+
+<ResponseField name="message" type="string">
+  Success or error message
+</ResponseField>
+
+<ResponseField name="data" type="object">
+  Complete driver information
+  
+  <Expandable title="data properties">
+    <ResponseField name="idPerfil" type="integer">
+      Profile ID
+    </ResponseField>
+    
+    <ResponseField name="idUsuario" type="integer">
+      Associated user account ID
+    </ResponseField>
+    
+    <ResponseField name="email" type="string">
+      Driver's email address
+    </ResponseField>
+    
+    <ResponseField name="nombreCompleto" type="string">
+      Full name (computed from nombre1, nombre2, nombre3, apellido1, apellido2, apellido3)
+    </ResponseField>
+    
+    <ResponseField name="nombre1" type="string">
+      First name
+    </ResponseField>
+    
+    <ResponseField name="nombre2" type="string">
+      Second name
+    </ResponseField>
+    
+    <ResponseField name="nombre3" type="string">
+      Third name
+    </ResponseField>
+    
+    <ResponseField name="apellido1" type="string">
+      First surname
+    </ResponseField>
+    
+    <ResponseField name="apellido2" type="string">
+      Second surname
+    </ResponseField>
+    
+    <ResponseField name="apellido3" type="string">
+      Married name
+    </ResponseField>
+    
+    <ResponseField name="telefono" type="string">
+      Contact phone number
+    </ResponseField>
+    
+    <ResponseField name="dui" type="string">
+      National ID number
+    </ResponseField>
+    
+    <ResponseField name="nit" type="string">
+      Tax identification number
+    </ResponseField>
+    
+    <ResponseField name="direccion" type="string">
+      Residential address
+    </ResponseField>
+    
+    <ResponseField name="codigoEmpleado" type="string">
+      Employee code
+    </ResponseField>
+    
+    <ResponseField name="cargoNominal" type="string">
+      Nominal position
+    </ResponseField>
+    
+    <ResponseField name="cargoFuncional" type="string">
+      Functional position
+    </ResponseField>
+    
+    <ResponseField name="observaciones" type="string">
+      Additional observations
+    </ResponseField>
+    
+    <ResponseField name="idDepartamentoAsignado" type="integer">
+      Assigned department ID
+    </ResponseField>
+    
+    <ResponseField name="departamento" type="string">
+      Department name
+    </ResponseField>
+    
+    <ResponseField name="idTipoLicencia" type="integer">
+      License type ID
+    </ResponseField>
+    
+    <ResponseField name="tipoLicencia" type="string">
+      License type description
+    </ResponseField>
+    
+    <ResponseField name="numeroLicencia" type="string">
+      Driver's license number
+    </ResponseField>
+    
+    <ResponseField name="fechaVencimientoLicencia" type="string">
+      License expiration date (YYYY-MM-DD)
+    </ResponseField>
+    
+    <ResponseField name="idTipoDisponibilidad" type="integer">
+      Availability status ID
+    </ResponseField>
+    
+    <ResponseField name="disponibilidad" type="string">
+      Availability status description
+    </ResponseField>
+    
+    <ResponseField name="imei" type="string">
+      Mobile device IMEI
+    </ResponseField>
+    
+    <ResponseField name="fechaCreacion" type="string">
+      Record creation timestamp
+    </ResponseField>
+    
+    <ResponseField name="fechaModificacion" type="string">
+      Last modification timestamp
+    </ResponseField>
+  </Expandable>
+</ResponseField>
+
+## Example Request
+
+```bash
+GET /motorista/123
+```
+
+## Example Response
+
+```json
+{
+  "success": true,
+  "message": "Motorista obtenido exitosamente",
+  "data": {
+    "idPerfil": 123,
+    "idUsuario": 456,
+    "email": "motorista@ejemplo.com",
+    "nombreCompleto": "JUAN CARLOS MARTINEZ LOPEZ",
+    "nombre1": "JUAN",
+    "nombre2": "CARLOS",
+    "nombre3": null,
+    "apellido1": "MARTINEZ",
+    "apellido2": "LOPEZ",
+    "apellido3": null,
+    "telefono": "7777-8888",
+    "dui": "12345678-9",
+    "nit": null,
+    "direccion": "Col. Escalón, San Salvador",
+    "codigoEmpleado": "EMP-001",
+    "cargoNominal": "Motorista",
+    "cargoFuncional": "Conductor",
+    "observaciones": null,
+    "idDepartamentoAsignado": 1,
+    "departamento": "San Salvador",
+    "idTipoLicencia": 1,
+    "tipoLicencia": "Licencia Tipo A",
+    "numeroLicencia": "A-12345",
+    "fechaVencimientoLicencia": "2026-12-31",
+    "idTipoDisponibilidad": 1,
+    "disponibilidad": "Disponible",
+    "imei": "123456789012345",
+    "fechaCreacion": "2024-01-15T10:30:00",
+    "fechaModificacion": "2024-03-10T14:20:00"
+  }
+}
+```
+
+## Status Codes
+
+- `200`: Driver retrieved successfully
+- `404`: Driver not found or has been deleted
+- `500`: Internal server error
+
+## Error Response Example
+
+```json
+{
+  "success": false,
+  "message": "Motorista no encontrado o ha sido eliminado",
+  "data": null
+}
+```
+
+## Use Cases
+
+- Display driver profile page with complete information
+- Retrieve driver details for editing forms
+- Verify driver information before assigning missions
+- Check license expiration dates and availability status

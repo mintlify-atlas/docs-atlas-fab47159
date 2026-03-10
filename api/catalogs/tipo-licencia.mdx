@@ -1,0 +1,276 @@
+---
+title: License Type Catalog
+description: Manage license type catalog for driver license classification
+---
+
+# License Type Catalog API
+
+Manage the catalog of license types (TipoLicencia) used to classify driver license categories.
+
+**Base Path:** `/tipo-licencia`
+
+## Endpoints
+
+### Create License Type
+
+```http
+POST /tipo-licencia/
+```
+
+Creates a new license type.
+
+#### Request Body
+
+```json
+{
+  "codigo": "TIPO_C",
+  "nombre": "Licencia Tipo C"
+}
+```
+
+#### Field Validations
+
+- **codigo** (required): Unique, uppercase, no spaces
+- **nombre** (required): Unique across active records
+
+#### Response
+
+```json
+{
+  "success": true,
+  "message": "Tipo de licencia creado exitosamente",
+  "data": {
+    "IdTipoLicencia": 1,
+    "Codigo": "TIPO_C",
+    "Nombre": "Licencia Tipo C",
+    "EsActivo": true
+  }
+}
+```
+
+---
+
+### Get License Type by ID
+
+```http
+GET /tipo-licencia/{id_tipo_licencia}
+```
+
+Retrieves a specific license type by ID. Only returns active records.
+
+#### Path Parameters
+
+- **id_tipo_licencia** (integer, required): License type ID
+
+#### Response
+
+```json
+{
+  "success": true,
+  "message": "Tipo de licencia obtenido exitosamente",
+  "data": {
+    "IdTipoLicencia": 1,
+    "Codigo": "TIPO_C",
+    "Nombre": "Licencia Tipo C",
+    "EsActivo": true
+  }
+}
+```
+
+---
+
+### List License Types (Paginated)
+
+```http
+GET /tipo-licencia/
+```
+
+Lists license types with pagination and optional filters.
+
+#### Query Parameters
+
+- **pagina** (integer, optional, default: 1): Page number (min: 1)
+- **por_pagina** (integer, optional, default: 10): Records per page (min: 1, max: 100)
+- **codigo** (string, optional): Filter by code (partial match)
+- **nombre** (string, optional): Filter by name (partial match)
+- **busqueda** (string, optional): General search in code and name
+
+#### Response
+
+```json
+{
+  "success": true,
+  "message": "Listado de tipos de licencia obtenido exitosamente",
+  "data": {
+    "items": [
+      {
+        "IdTipoLicencia": 1,
+        "Codigo": "TIPO_A",
+        "Nombre": "Licencia Tipo A",
+        "EsActivo": true
+      },
+      {
+        "IdTipoLicencia": 2,
+        "Codigo": "TIPO_B",
+        "Nombre": "Licencia Tipo B",
+        "EsActivo": true
+      }
+    ],
+    "total": 5,
+    "pagina": 1,
+    "porPagina": 10,
+    "totalPaginas": 1
+  }
+}
+```
+
+---
+
+### List All License Types (No Pagination)
+
+```http
+GET /tipo-licencia/todos/lista
+```
+
+Retrieves all active license types without pagination. Ideal for dropdowns and select components.
+
+#### Query Parameters
+
+- **codigo** (string, optional): Filter by code
+- **nombre** (string, optional): Filter by name
+- **busqueda** (string, optional): General search
+
+#### Response
+
+```json
+{
+  "success": true,
+  "message": "Listado completo de tipos de licencia obtenido exitosamente",
+  "data": [
+    {
+      "IdTipoLicencia": 1,
+      "Codigo": "TIPO_A",
+      "Nombre": "Licencia Tipo A"
+    },
+    {
+      "IdTipoLicencia": 2,
+      "Codigo": "TIPO_B",
+      "Nombre": "Licencia Tipo B"
+    },
+    {
+      "IdTipoLicencia": 3,
+      "Codigo": "TIPO_C",
+      "Nombre": "Licencia Tipo C"
+    }
+  ]
+}
+```
+
+---
+
+### Update License Type
+
+```http
+PUT /tipo-licencia/{id_tipo_licencia}
+```
+
+Updates an existing license type. Only provided fields are updated.
+
+#### Path Parameters
+
+- **id_tipo_licencia** (integer, required): License type ID
+
+#### Request Body
+
+```json
+{
+  "nombre": "Licencia Profesional Tipo C"
+}
+```
+
+#### Validations
+
+- Record must exist and be active
+- If changing `codigo`, must be unique
+- If changing `nombre`, must be unique
+
+#### Response
+
+```json
+{
+  "success": true,
+  "message": "Tipo de licencia actualizado exitosamente",
+  "data": {
+    "IdTipoLicencia": 3,
+    "Codigo": "TIPO_C",
+    "Nombre": "Licencia Profesional Tipo C",
+    "EsActivo": true
+  }
+}
+```
+
+---
+
+### Delete License Type
+
+```http
+DELETE /tipo-licencia/{id_tipo_licencia}
+```
+
+Performs a soft delete on a license type. Cannot delete if there are active drivers using this license type.
+
+#### Path Parameters
+
+- **id_tipo_licencia** (integer, required): License type ID
+
+#### Validations
+
+- Record must exist and be active
+- Cannot have active drivers associated
+
+#### Response
+
+```json
+{
+  "success": true,
+  "message": "Tipo de licencia eliminado exitosamente",
+  "data": {
+    "IdTipoLicencia": 1,
+    "EsActivo": false
+  }
+}
+```
+
+---
+
+## Error Responses
+
+### 404 Not Found
+
+```json
+{
+  "success": false,
+  "message": "Tipo de licencia no encontrado",
+  "data": null
+}
+```
+
+### 409 Conflict
+
+```json
+{
+  "success": false,
+  "message": "Ya existe un tipo de licencia con ese código",
+  "data": null
+}
+```
+
+### 500 Internal Server Error
+
+```json
+{
+  "success": false,
+  "message": "Error interno del servidor",
+  "data": null
+}
+```

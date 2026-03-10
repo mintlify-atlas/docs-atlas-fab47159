@@ -1,0 +1,319 @@
+---
+title: 'Request Lifecycle'
+description: 'Complete workflow for creating and managing transport requests'
+icon: 'repeat'
+---
+
+# Request Lifecycle
+
+This guide walks you through the complete lifecycle of a transport request, from creation to completion or cancellation.
+
+## Overview
+
+A transport request (solicitud) goes through several states:
+
+- **PENDIENTE_APROBACION** - Initial state when created
+- **APROBADA** - Approved by the approver
+- **RECHAZADA** - Rejected by the approver
+- **EN_PROCESO** - At least one mission is in progress
+- **COMPLETADA** - All missions completed successfully
+- **CANCELADA** - Request was cancelled
+
+## Creating a Request
+
+<Steps>
+  <Step title="Prepare request data">
+    Gather all required information:
+    - Requester and approver IDs
+    - Department, service type, and priority
+    - Service date and time
+    - Passenger count and names
+    - At least one location (origin/destinations)
+  </Step>
+
+  <Step title="Submit the request">
+    Send a POST request to `/solicitud` with the complete data.
+
+    <CodeGroup>
+    ```bash cURL
+    curl -X POST https://api.example.com/solicitud \
+      -H "Content-Type: application/json" \
+      -d '{
+        "idUsuarioSolicitante": 1,
+        "idDepartamentoSolicitante": 2,
+        "idUsuarioAprobador": 3,
+        "idTipoPrioridadSolicitud": 2,
+        "idTipoServicioSolicitud": 1,
+        "asunto": "Transporte de personal a sede central",
+        "descripcion": "Se requiere transporte para personal de la unidad",
+        "justificacion": "Reunión de coordinación institucional",
+        "cantidadPasajeros": 5,
+        "nombresPasajeros": "Juan Pérez, María López, Carlos Rivas",
+        "fechaServicioRequerido": "2026-04-15",
+        "horaServicioRequerido": "08:00",
+        "observaciones": "Llevar a las 8am y regresar a las 5pm",
+        "lugares": [
+          {
+            "idLugar": 5,
+            "esOrigen": true,
+            "orden": 0,
+            "descripcion": "Sede central - Salida"
+          },
+          {
+            "idLugar": 12,
+            "esOrigen": false,
+            "orden": 1,
+            "descripcion": "Primer destino",
+            "horaEstimadaLlegada": "10:30",
+            "requiereRetorno": true,
+            "horaEstimadaRetorno": "12:00"
+          }
+        ]
+      }'
+    ```
+
+    ```json Response
+    {
+      "success": true,
+      "message": "Solicitud creada exitosamente",
+      "data": {
+        "Id": 42,
+        "Codigo": "SOL-2026-03-00042",
+        "IdEstadoSolicitud": 1,
+        "CodigoEstado": "PENDIENTE_APROBACION",
+        "NombreEstado": "Pendiente de Aprobación",
+        "Asunto": "Transporte de personal a sede central",
+        "FechaServicioRequerido": "2026-04-15",
+        "HoraServicioRequerido": "08:00:00",
+        "CantidadPasajeros": 5,
+        "FechaHoraCreacion": "2026-03-10 14:23:15"
+      }
+    }
+    ```
+    </CodeGroup>
+
+    <Note>
+      The request code is automatically generated in the format `SOL-{YEAR}-{MONTH}-{SEQUENTIAL}`.
+      The initial state is always **PENDIENTE_APROBACION**.
+    </Note>
+  </Step>
+
+  <Step title="Email notifications sent">
+    The system automatically sends:
+    - Confirmation email to the requester
+    - Notification email to the approver
+  </Step>
+</Steps>
+
+## Updating a Request
+
+Requests can only be updated while in **PENDIENTE_APROBACION** state.
+
+```bash cURL
+curl -X PUT https://api.example.com/solicitud/42 \
+  -H "Content-Type: application/json" \
+  -d '{
+    "asunto": "Transporte de personal a sede central - Actualizado",
+    "cantidadPasajeros": 6,
+    "observaciones": "Se agregó un pasajero adicional"
+  }'
+```
+
+<Warning>
+  Once a request is approved, rejected, or cancelled, it cannot be updated. You'll receive a `409 Conflict` error if you try.
+</Warning>
+
+## Approval Flow
+
+### Approving a Request
+
+<CodeGroup>
+```bash cURL
+curl -X POST https://api.example.com/solicitud/42/aprobar \
+  -H "Content-Type: application/json" \
+  -d '{
+    "motivo": "Aprobado por prioridad institucional"
+  }'
+```
+
+```json Response
+{
+  "success": true,
+  "message": "Solicitud aprobada exitosamente",
+  "data": {
+    "Id": 42,
+    "Codigo": "SOL-2026-03-00042",
+    "IdEstadoSolicitud": 2,
+    "CodigoEstado": "APROBADA",
+    "NombreEstado": "Aprobada"
+  }
+}
+```
+</CodeGroup>
+
+<Note>
+  **Missions are NOT automatically created** when approving a request. The approver must manually create missions later through the Mission module.
+</Note>
+
+### Rejecting a Request
+
+A rejection reason is **mandatory**.
+
+<CodeGroup>
+```bash cURL
+curl -X POST https://api.example.com/solicitud/42/rechazar \
+  -H "Content-Type: application/json" \
+  -d '{
+    "motivo": "No cumple con los requisitos mínimos establecidos"
+  }'
+```
+
+```json Response
+{
+  "success": true,
+  "message": "Solicitud rechazada exitosamente",
+  "data": {
+    "Id": 42,
+    "CodigoEstado": "RECHAZADA",
+    "NombreEstado": "Rechazada"
+  }
+}
+```
+</CodeGroup>
+
+An email is sent to the requester with the rejection reason.
+
+## State Transitions
+
+### Automatic State Changes
+
+The request state automatically transitions based on mission status:
+
+- **APROBADA → EN_PROCESO**: When the first mission is started
+- **EN_PROCESO → COMPLETADA**: When all missions are completed
+
+### Viewing State History
+
+Track all state changes with timestamps and reasons:
+
+```bash cURL
+curl https://api.example.com/solicitud/42/historico
+```
+
+```json Response
+{
+  "success": true,
+  "data": [
+    {
+      "IdHistoricoSolicitud": 1,
+      "IdSolicitud": 42,
+      "IdEstadoSolicitud": 1,
+      "CodigoEstado": "PENDIENTE_APROBACION",
+      "NombreEstado": "Pendiente de Aprobación",
+      "ColorEstado": "#FFA500",
+      "Motivo": null,
+      "FechaHoraCambio": "2026-03-10 14:23:15"
+    },
+    {
+      "IdHistoricoSolicitud": 2,
+      "IdSolicitud": 42,
+      "IdEstadoSolicitud": 2,
+      "CodigoEstado": "APROBADA",
+      "NombreEstado": "Aprobada",
+      "ColorEstado": "#00FF00",
+      "Motivo": "Aprobado por prioridad institucional",
+      "FechaHoraCambio": "2026-03-10 15:10:22"
+    }
+  ]
+}
+```
+
+## Cancelling a Request
+
+Requests can be cancelled unless they're already in a final state.
+
+<CodeGroup>
+```bash cURL
+curl -X POST https://api.example.com/solicitud/42/cancelar \
+  -H "Content-Type: application/json" \
+  -d '{
+    "motivo": "El evento fue pospuesto indefinidamente"
+  }'
+```
+
+```json Response
+{
+  "success": true,
+  "message": "Solicitud cancelada exitosamente",
+  "data": {
+    "Id": 42,
+    "CodigoEstado": "CANCELADA"
+  }
+}
+```
+</CodeGroup>
+
+<Warning>
+  **Cancellation restrictions:**
+  - Cannot cancel if already RECHAZADA, COMPLETADA, or CANCELADA
+  - Cannot cancel if there are missions EN_CURSO (in progress)
+  - A cancellation reason is mandatory
+  - Missions that are not EN_CURSO or COMPLETADA are soft-deleted
+</Warning>
+
+Emails are sent to both the requester and approver.
+
+## Deleting a Request
+
+Requests can only be deleted (soft delete) when in **PENDIENTE_APROBACION** state.
+
+```bash cURL
+curl -X DELETE https://api.example.com/solicitud/42
+```
+
+<Info>
+  This performs a soft delete. The record remains in the database but is marked as deleted and excluded from normal queries.
+</Info>
+
+## Filtering and Searching
+
+Retrieve requests with powerful filtering:
+
+```bash cURL
+curl "https://api.example.com/solicitud?codigoEstado=APROBADA&fechaDesde=2026-03-01&fechaHasta=2026-03-31&pagina=1&por_pagina=20"
+```
+
+Available filters:
+- `idEstadoSolicitud` - Filter by state ID
+- `codigoEstado` - Filter by state code (PENDIENTE_APROBACION, APROBADA, etc.)
+- `idDepartamento` - Filter by department
+- `idUsuarioSolicitante` - Filter by requester
+- `idUsuarioAprobador` - Filter by approver
+- `idTipoServicio` - Filter by service type
+- `idTipoPrioridad` - Filter by priority
+- `fechaDesde` / `fechaHasta` - Date range (YYYY-MM-DD)
+- `busqueda` - Search in code, subject, and description
+
+<Note>
+  Use `/solicitud/todos/lista` for unpaginated results (useful for dropdowns and exports).
+</Note>
+
+## Best Practices
+
+<AccordionGroup>
+  <Accordion title="Validate dates">
+    The service date (`fechaServicioRequerido`) cannot be in the past. The API validates this automatically.
+  </Accordion>
+
+  <Accordion title="Define clear locations">
+    Always include at least one origin location (`esOrigen: true`) and specify the order for each location.
+  </Accordion>
+
+  <Accordion title="Track state changes">
+    Use the `/historico` endpoint to audit all state transitions and understand the approval flow.
+  </Accordion>
+
+  <Accordion title="Handle missions separately">
+    Remember that approving a request does NOT create missions. See the [Mission Management guide](/guides/mission-management) for creating missions.
+  </Accordion>
+</AccordionGroup>

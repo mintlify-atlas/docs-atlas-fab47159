@@ -1,0 +1,67 @@
+---
+title: 'Overview'
+description: 'Mission management endpoints for creating, assigning, and tracking vehicle missions'
+---
+
+## Mission Management
+
+The Mission API provides endpoints to manage the complete lifecycle of vehicle missions, from creation through completion or cancellation.
+
+### Mission Lifecycle
+
+Missions follow a defined state flow:
+
+1. **PROGRAMADA** (Scheduled) - Initial state when created
+2. **EN_EJECUCION** (In Progress) - After starting the mission
+3. **COMPLETADA** (Completed) - Successfully finished
+4. **CANCELADA** (Cancelled) - Terminated before completion
+
+### Available Operations
+
+<CardGroup cols={2}>
+  <Card title="Create Mission" icon="plus" href="/api/mision/create">
+    Create a new mission for an approved request
+  </Card>
+  <Card title="Assign Resources" icon="truck" href="/api/mision/assign">
+    Assign vehicle and driver to a scheduled mission
+  </Card>
+  <Card title="Start Mission" icon="play" href="/api/mision/start">
+    Begin executing a scheduled mission
+  </Card>
+  <Card title="Finish Mission" icon="flag-checkered" href="/api/mision/finish">
+    Complete a mission in progress
+  </Card>
+  <Card title="Cancel Mission" icon="ban" href="/api/mision/cancel">
+    Cancel a mission with reason
+  </Card>
+  <Card title="List Missions" icon="list" href="/api/mision/list">
+    Get missions with pagination and filters
+  </Card>
+  <Card title="Get Mission" icon="file" href="/api/mision/get">
+    Retrieve mission details and mileage
+  </Card>
+  <Card title="Update Mission" icon="pen" href="/api/mision/update">
+    Modify a scheduled mission
+  </Card>
+  <Card title="Delete Mission" icon="trash" href="/api/mision/delete">
+    Soft delete a scheduled mission
+  </Card>
+</CardGroup>
+
+### Key Features
+
+- **Multi-stop Support**: Missions can include multiple stops with estimated arrival times
+- **Resource Assignment**: Validates vehicle and driver availability before assignment
+- **Mileage Tracking**: Records initial and final mileage for each mission
+- **Fuel Consumption**: Automatically calculates fuel consumption in gallons
+- **State Validation**: Enforces valid state transitions throughout the lifecycle
+- **Request Integration**: Automatically updates parent request status based on mission states
+
+### Common Response Codes
+
+- `200` - Success
+- `201` - Created successfully
+- `404` - Resource not found
+- `409` - Conflict (invalid state transition or resource already assigned)
+- `422` - Validation error
+- `500` - Internal server error

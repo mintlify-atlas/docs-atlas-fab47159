@@ -1,0 +1,403 @@
+---
+title: 'Mission Management'
+description: 'Managing missions from creation to completion with vehicle and driver assignment'
+icon: 'truck'
+---
+
+# Mission Management
+
+Missions represent the actual execution of approved transport requests. This guide covers the complete mission lifecycle: creation, assignment, execution, and completion.
+
+## Mission States
+
+Missions flow through these states:
+
+- **PROGRAMADA** - Scheduled but not yet assigned or started
+- **EN_EJECUCION** - Mission has started
+- **EN_RUTA_RECOGIDA** - En route to pick up passengers
+- **EN_RUTA_REGRESO** - Returning from destination
+- **EN_ESPERA** - Waiting at a location
+- **COMPLETADA** - Mission completed successfully
+- **CANCELADA** - Mission was cancelled
+
+## Creating a Mission
+
+Missions are created for approved requests.
+
+<Steps>
+  <Step title="Verify request status">
+    The request must be in state **APROBADA** or **EN_PROCESO**.
+  </Step>
+
+  <Step title="Create the mission">
+    <CodeGroup>
+    ```bash cURL
+    curl -X POST https://api.example.com/mision \
+      -H "Content-Type: application/json" \
+      -d '{
+        "idSolicitud": 42,
+        "idLugarOrigen": 5,
+        "idLugarDestino": 12,
+        "descripcion": "Traslado de personal al aeropuerto",
+        "fechaProgramada": "2026-04-15",
+        "horaSalidaProgramada": "08:00:00",
+        "horaLlegadaEstimada": "09:30:00",
+        "observaciones": "Llevar documentos",
+        "paradas": []
+      }'
+    ```
+
+    ```json Response
+    {
+      "success": true,
+      "message": "Misión creada exitosamente",
+      "data": {
+        "Id": 15,
+        "IdSolicitud": 42,
+        "IdEstadoMision": 1,
+        "CodigoEstado": "PROGRAMADA",
+        "NombreEstado": "Programada",
+        "FechaProgramada": "2026-04-15",
+        "HoraSalidaProgramada": "08:00:00",
+        "HoraLlegadaEstimada": "09:30:00",
+        "FechaHoraCreacion": "2026-03-10 15:30:00"
+      }
+    }
+    ```
+    </CodeGroup>
+  </Step>
+
+  <Step title="Mission created with PROGRAMADA state">
+    The mission is now scheduled and ready for vehicle/driver assignment.
+  </Step>
+</Steps>
+
+### Creating Missions with Multiple Stops
+
+For complex routes with multiple destinations:
+
+```bash cURL
+curl -X POST https://api.example.com/mision \
+  -H "Content-Type: application/json" \
+  -d '{
+    "idSolicitud": 42,
+    "idLugarOrigen": 1,
+    "idLugarDestino": 5,
+    "descripcion": "Ruta de entrega con múltiples paradas",
+    "fechaProgramada": "2026-04-15",
+    "horaSalidaProgramada": "08:00:00",
+    "horaLlegadaEstimada": "14:00:00",
+    "observaciones": "Entrega en múltiples sucursales",
+    "paradas": [
+      {
+        "idLugarDestino": 2,
+        "numeroParada": 1,
+        "descripcion": "Entrega en sucursal norte",
+        "esParadaFinal": false,
+        "fechaHoraLlegadaEstimada": "2026-04-15 09:30:00"
+      },
+      {
+        "idLugarDestino": 3,
+        "numeroParada": 2,
+        "descripcion": "Entrega en sucursal centro",
+        "esParadaFinal": false,
+        "fechaHoraLlegadaEstimada": "2026-04-15 11:00:00"
+      },
+      {
+        "idLugarDestino": 4,
+        "numeroParada": 3,
+        "descripcion": "Entrega en sucursal sur",
+        "esParadaFinal": false,
+        "fechaHoraLlegadaEstimada": "2026-04-15 12:30:00"
+      },
+      {
+        "idLugarDestino": 5,
+        "numeroParada": 4,
+        "descripcion": "Retorno a oficina principal",
+        "esParadaFinal": true,
+        "fechaHoraLlegadaEstimada": "2026-04-15 14:00:00"
+      }
+    ]
+  }'
+```
+
+## Assigning Vehicle and Driver
+
+Once created, assign a vehicle and driver to the mission.
+
+<CodeGroup>
+```bash cURL
+curl -X POST https://api.example.com/mision/15/asignar \
+  -H "Content-Type: application/json" \
+  -d '{
+    "idVehiculoAsignado": 8,
+    "idMotoristaAsignado": 5
+  }'
+```
+
+```json Response
+{
+  "success": true,
+  "message": "Vehículo y motorista asignados exitosamente",
+  "data": {
+    "Id": 15,
+    "IdVehiculoAsignado": 8,
+    "IdMotoristaAsignado": 5,
+    "PlacaVehiculo": "P503067",
+    "NombreMotorista": "Carlos Martínez"
+  }
+}
+```
+</CodeGroup>
+
+<Warning>
+  **Assignment validations:**
+  - Mission must be in **PROGRAMADA** state
+  - Vehicle and driver must exist and not be deleted
+  - Vehicle cannot have another active mission on the same date
+  - Driver cannot have another active mission on the same date
+</Warning>
+
+## Starting a Mission
+
+When the driver is ready to depart:
+
+<CodeGroup>
+```bash cURL
+curl -X POST https://api.example.com/mision/15/iniciar \
+  -H "Content-Type: application/json" \
+  -d '{
+    "kilometrajeInicio": 45230,
+    "combustibleInicialGalones": 12.5
+  }'
+```
+
+```json Response
+{
+  "success": true,
+  "message": "Misión iniciada exitosamente",
+  "data": {
+    "Id": 15,
+    "IdEstadoMision": 2,
+    "CodigoEstado": "EN_EJECUCION",
+    "KilometrajeInicio": 45230,
+    "CombustibleInicialGalones": 12.5,
+    "FechaHoraInicio": "2026-04-15 08:05:00"
+  }
+}
+```
+</CodeGroup>
+
+<Note>
+  **Automatic state changes:**
+  - The mission changes from PROGRAMADA to EN_EJECUCION
+  - If the request is still APROBADA, it automatically changes to EN_PROCESO
+</Note>
+
+### Validations
+
+- Mission must be in **PROGRAMADA** state
+- Vehicle and driver must already be assigned
+- Starting mileage cannot be less than the vehicle's last recorded mileage
+
+<Tip>
+  Use the `/mision/kilometraje/{placa}` endpoint to get the last recorded mileage for a vehicle before starting a mission.
+</Tip>
+
+## Completing a Mission
+
+When the mission is finished:
+
+<CodeGroup>
+```bash cURL
+curl -X POST https://api.example.com/mision/15/finalizar \
+  -H "Content-Type: application/json" \
+  -d '{
+    "kilometrajeFin": 45450,
+    "combustibleFinalGalones": 8.0,
+    "incidencias": "Sin novedad"
+  }'
+```
+
+```json Response
+{
+  "success": true,
+  "message": "Misión finalizada exitosamente",
+  "data": {
+    "Id": 15,
+    "IdEstadoMision": 6,
+    "CodigoEstado": "COMPLETADA",
+    "KilometrajeFin": 45450,
+    "KilometrajeRecorrido": 220,
+    "CombustibleFinalGalones": 8.0,
+    "CombustibleConsumidoGalones": 4.5,
+    "FechaHoraFin": "2026-04-15 10:15:00",
+    "Incidencias": "Sin novedad"
+  }
+}
+```
+</CodeGroup>
+
+### Automatic Calculations
+
+The system automatically calculates:
+- **KilometrajeRecorrido** = `kilometrajeFin - kilometrajeInicio`
+- **CombustibleConsumidoGalones** = `combustibleInicialGalones - combustibleFinalGalones`
+
+### Request Completion
+
+<Info>
+  When **all missions** of a request are COMPLETADA, the request automatically changes to **COMPLETADA** state.
+</Info>
+
+### Validations
+
+- Mission must be in EN_EJECUCION, EN_RUTA_RECOGIDA, EN_RUTA_REGRESO, or EN_ESPERA
+- Final mileage cannot be less than starting mileage
+- Final fuel must be between 0 and initial fuel
+
+## Tracking Mission Progress
+
+### Get Mission by ID
+
+Retrieve complete mission details including stops and invoices:
+
+```bash cURL
+curl https://api.example.com/mision/15
+```
+
+### List Missions by Request
+
+Get all active missions for a specific request:
+
+```bash cURL
+curl https://api.example.com/mision/por-solicitud/42
+```
+
+### Check Vehicle Mileage
+
+Before starting a mission, verify the vehicle's last recorded mileage:
+
+```bash cURL
+curl https://api.example.com/mision/kilometraje/P503067
+```
+
+```json Response
+{
+  "success": true,
+  "message": "Último kilometraje obtenido exitosamente",
+  "data": {
+    "placa": "P503067",
+    "ultimoKilometraje": 45230,
+    "fechaUltimaLectura": "2026-03-10 17:30:00"
+  }
+}
+```
+
+<Note>
+  If the vehicle has no completed missions, `ultimoKilometraje` returns 0.
+</Note>
+
+## Updating a Mission
+
+Missions can only be updated while in **PROGRAMADA** state:
+
+```bash cURL
+curl -X PUT https://api.example.com/mision/15 \
+  -H "Content-Type: application/json" \
+  -d '{
+    "descripcion": "Traslado de personal al aeropuerto - Actualizado",
+    "horaSalidaProgramada": "08:30:00",
+    "observaciones": "Cambio de hora por tráfico previsto"
+  }'
+```
+
+<Warning>
+  Once a mission is started or in any other state, it cannot be updated. You'll need to cancel and create a new one if necessary.
+</Warning>
+
+## Cancelling a Mission
+
+Missions can be cancelled unless already completed:
+
+<CodeGroup>
+```bash cURL
+curl -X POST https://api.example.com/mision/15/cancelar \
+  -H "Content-Type: application/json" \
+  -d '{
+    "motivo": "Solicitud cancelada por el solicitante"
+  }'
+```
+
+```json Response
+{
+  "success": true,
+  "message": "Misión cancelada exitosamente",
+  "data": {
+    "Id": 15,
+    "IdEstadoMision": 7,
+    "CodigoEstado": "CANCELADA",
+    "MotivoCancelacion": "Solicitud cancelada por el solicitante"
+  }
+}
+```
+</CodeGroup>
+
+<Info>
+  A cancellation reason is **mandatory**. Missions cannot be cancelled if already COMPLETADA or CANCELADA.
+</Info>
+
+## Filtering and Searching
+
+Retrieve missions with advanced filters:
+
+```bash cURL
+curl "https://api.example.com/mision?codigoEstado=EN_EJECUCION&idVehiculo=8&fechaDesde=2026-04-01&fechaHasta=2026-04-30&pagina=1&porPagina=20"
+```
+
+Available filters:
+- `idSolicitud` - Filter by request
+- `idEstadoMision` - Filter by mission state ID
+- `codigoEstado` - Filter by state code (PROGRAMADA, EN_EJECUCION, etc.)
+- `idVehiculo` - Filter by vehicle
+- `idMotorista` - Filter by driver
+- `fechaDesde` / `fechaHasta` - Date range (YYYY-MM-DD)
+- `busqueda` - General search
+
+## Deleting a Mission
+
+Missions can only be deleted (soft delete) when in **PROGRAMADA** state:
+
+```bash cURL
+curl -X DELETE https://api.example.com/mision/15
+```
+
+This also soft-deletes associated stops and state history.
+
+## Best Practices
+
+<AccordionGroup>
+  <Accordion title="Verify vehicle availability">
+    Before assigning, check that the vehicle doesn't have overlapping missions on the same date.
+  </Accordion>
+
+  <Accordion title="Check driver schedule">
+    Similarly, ensure the driver is not already assigned to another mission on the same date.
+  </Accordion>
+
+  <Accordion title="Record accurate mileage">
+    Always verify the vehicle's last mileage reading before starting a mission to avoid validation errors.
+  </Accordion>
+
+  <Accordion title="Track fuel consumption">
+    Record fuel levels accurately at start and end to enable proper consumption tracking and reporting.
+  </Accordion>
+
+  <Accordion title="Document incidents">
+    Use the `incidencias` field when completing missions to document any issues, delays, or noteworthy events.
+  </Accordion>
+
+  <Accordion title="Use multiple stops for complex routes">
+    For missions with several destinations, use the `paradas` array to define the complete route with estimated times.
+  </Accordion>
+</AccordionGroup>

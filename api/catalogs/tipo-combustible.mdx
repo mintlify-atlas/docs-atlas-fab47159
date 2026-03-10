@@ -1,0 +1,276 @@
+---
+title: Fuel Type Catalog
+description: Manage fuel type catalog for vehicle fuel classification
+---
+
+# Fuel Type Catalog API
+
+Manage the catalog of fuel types (TipoCombustible) used to classify vehicles by their fuel consumption.
+
+**Base Path:** `/tipo-combustible`
+
+## Endpoints
+
+### Create Fuel Type
+
+```http
+POST /tipo-combustible/
+```
+
+Creates a new fuel type.
+
+#### Request Body
+
+```json
+{
+  "codigo": "DIESEL",
+  "nombre": "Diésel"
+}
+```
+
+#### Field Validations
+
+- **codigo** (required): Unique, uppercase, no spaces
+- **nombre** (required): Unique across active records
+
+#### Response
+
+```json
+{
+  "success": true,
+  "message": "Tipo de combustible creado exitosamente",
+  "data": {
+    "IdTipoCombustible": 1,
+    "Codigo": "DIESEL",
+    "Nombre": "Diésel",
+    "EsActivo": true
+  }
+}
+```
+
+---
+
+### Get Fuel Type by ID
+
+```http
+GET /tipo-combustible/{id_tipo_combustible}
+```
+
+Retrieves a specific fuel type by ID. Only returns active records.
+
+#### Path Parameters
+
+- **id_tipo_combustible** (integer, required): Fuel type ID
+
+#### Response
+
+```json
+{
+  "success": true,
+  "message": "Tipo de combustible obtenido exitosamente",
+  "data": {
+    "IdTipoCombustible": 1,
+    "Codigo": "DIESEL",
+    "Nombre": "Diésel",
+    "EsActivo": true
+  }
+}
+```
+
+---
+
+### List Fuel Types (Paginated)
+
+```http
+GET /tipo-combustible/
+```
+
+Lists fuel types with pagination and optional filters.
+
+#### Query Parameters
+
+- **pagina** (integer, optional, default: 1): Page number (min: 1)
+- **por_pagina** (integer, optional, default: 10): Records per page (min: 1, max: 100)
+- **codigo** (string, optional): Filter by code (partial match)
+- **nombre** (string, optional): Filter by name (partial match)
+- **busqueda** (string, optional): General search in code and name
+
+#### Response
+
+```json
+{
+  "success": true,
+  "message": "Listado de tipos de combustible obtenido exitosamente",
+  "data": {
+    "items": [
+      {
+        "IdTipoCombustible": 1,
+        "Codigo": "GASOLINA",
+        "Nombre": "Gasolina",
+        "EsActivo": true
+      },
+      {
+        "IdTipoCombustible": 2,
+        "Codigo": "DIESEL",
+        "Nombre": "Diésel",
+        "EsActivo": true
+      }
+    ],
+    "total": 3,
+    "pagina": 1,
+    "porPagina": 10,
+    "totalPaginas": 1
+  }
+}
+```
+
+---
+
+### List All Fuel Types (No Pagination)
+
+```http
+GET /tipo-combustible/todos/lista
+```
+
+Retrieves all active fuel types without pagination. Ideal for dropdowns and select components.
+
+#### Query Parameters
+
+- **codigo** (string, optional): Filter by code
+- **nombre** (string, optional): Filter by name
+- **busqueda** (string, optional): General search
+
+#### Response
+
+```json
+{
+  "success": true,
+  "message": "Listado completo de tipos de combustible obtenido exitosamente",
+  "data": [
+    {
+      "IdTipoCombustible": 1,
+      "Codigo": "GASOLINA",
+      "Nombre": "Gasolina"
+    },
+    {
+      "IdTipoCombustible": 2,
+      "Codigo": "DIESEL",
+      "Nombre": "Diésel"
+    },
+    {
+      "IdTipoCombustible": 3,
+      "Codigo": "ELECTRICO",
+      "Nombre": "Eléctrico"
+    }
+  ]
+}
+```
+
+---
+
+### Update Fuel Type
+
+```http
+PUT /tipo-combustible/{id_tipo_combustible}
+```
+
+Updates an existing fuel type. Only provided fields are updated.
+
+#### Path Parameters
+
+- **id_tipo_combustible** (integer, required): Fuel type ID
+
+#### Request Body
+
+```json
+{
+  "nombre": "Gasóleo"
+}
+```
+
+#### Validations
+
+- Record must exist and be active
+- If changing `codigo`, must be unique
+- If changing `nombre`, must be unique
+
+#### Response
+
+```json
+{
+  "success": true,
+  "message": "Tipo de combustible actualizado exitosamente",
+  "data": {
+    "IdTipoCombustible": 2,
+    "Codigo": "DIESEL",
+    "Nombre": "Gasóleo",
+    "EsActivo": true
+  }
+}
+```
+
+---
+
+### Delete Fuel Type
+
+```http
+DELETE /tipo-combustible/{id_tipo_combustible}
+```
+
+Performs a soft delete on a fuel type. Cannot delete if there are active vehicles using this fuel type.
+
+#### Path Parameters
+
+- **id_tipo_combustible** (integer, required): Fuel type ID
+
+#### Validations
+
+- Record must exist and be active
+- Cannot have active vehicles associated
+
+#### Response
+
+```json
+{
+  "success": true,
+  "message": "Tipo de combustible eliminado exitosamente",
+  "data": {
+    "IdTipoCombustible": 1,
+    "EsActivo": false
+  }
+}
+```
+
+---
+
+## Error Responses
+
+### 404 Not Found
+
+```json
+{
+  "success": false,
+  "message": "Tipo de combustible no encontrado",
+  "data": null
+}
+```
+
+### 409 Conflict
+
+```json
+{
+  "success": false,
+  "message": "Ya existe un tipo de combustible con ese código",
+  "data": null
+}
+```
+
+### 500 Internal Server Error
+
+```json
+{
+  "success": false,
+  "message": "Error interno del servidor",
+  "data": null
+}
+```

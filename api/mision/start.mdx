@@ -1,0 +1,108 @@
+---
+title: 'Start Mission'
+api: 'POST /mision/{id}/iniciar'
+description: 'Start a scheduled mission and change state to in progress'
+---
+
+## Start Mission
+
+Initiates a mission by changing its state from `PROGRAMADA` to `EN_EJECUCION` (in progress).
+
+### Path Parameters
+
+<ParamField path="id" type="integer" required>
+  ID of the mission to start.
+</ParamField>
+
+### Request Body
+
+<ParamField body="kilometrajeInicio" type="integer" required>
+  Starting mileage reading from the vehicle odometer. Must be >= 0.
+</ParamField>
+
+<ParamField body="combustibleInicialGalones" type="number" required>
+  Initial fuel amount in gallons. Must be > 0.
+</ParamField>
+
+### Response
+
+<ResponseField name="success" type="boolean">
+  Indicates if the request was successful.
+</ResponseField>
+
+<ResponseField name="message" type="string">
+  Response message: "Misión iniciada exitosamente"
+</ResponseField>
+
+<ResponseField name="data" type="object">
+  The updated mission object with starting mileage and fuel recorded.
+</ResponseField>
+
+### Validations
+
+- Mission must be in `PROGRAMADA` state
+- Mission must have assigned vehicle and driver
+- Starting mileage cannot be less than the vehicle's last recorded mileage
+- Automatically changes parent request to `EN_PROCESO` if it was in `APROBADA` state
+
+<RequestExample>
+```bash cURL
+curl -X POST "https://api.example.com/mision/1/iniciar" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "kilometrajeInicio": 45230,
+    "combustibleInicialGalones": 12.5
+  }'
+```
+</RequestExample>
+
+<ResponseExample>
+```json 200 - Success
+{
+  "success": true,
+  "message": "Misión iniciada exitosamente",
+  "data": {
+    "idMision": 1,
+    "idSolicitud": 1,
+    "idVehiculoAsignado": 1,
+    "idMotoristaAsignado": 5,
+    "descripcion": "Traslado de personal al aeropuerto",
+    "fechaProgramada": "2025-06-15",
+    "horaSalidaProgramada": "08:00:00",
+    "kilometrajeInicio": 45230,
+    "combustibleInicialGalones": 12.5,
+    "idEstadoMision": 2,
+    "codigoEstado": "EN_EJECUCION",
+    "fechaHoraInicio": "2025-06-15 08:05:30"
+  }
+}
+```
+
+```json 404 - Mission Not Found
+{
+  "success": false,
+  "message": "Misión no encontrada"
+}
+```
+
+```json 409 - Invalid State
+{
+  "success": false,
+  "message": "La misión debe estar en estado PROGRAMADA para iniciarse"
+}
+```
+
+```json 422 - Missing Assignment
+{
+  "success": false,
+  "message": "La misión debe tener vehículo y motorista asignados antes de iniciarse"
+}
+```
+
+```json 422 - Invalid Mileage
+{
+  "success": false,
+  "message": "El kilometraje inicial no puede ser menor al último registrado del vehículo (45500)"
+}
+```
+</ResponseExample>

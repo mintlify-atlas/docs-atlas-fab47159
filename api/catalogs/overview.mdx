@@ -1,0 +1,95 @@
+---
+title: Catalog Management Overview
+description: Overview of all catalog management endpoints in the transportation request system
+---
+
+# Catalog Management API
+
+The Catalog Management API provides endpoints to manage various catalogs used throughout the transportation request system. All catalogs follow a consistent CRUD pattern with soft deletion, validation, and standardized Spanish responses.
+
+## Available Catalogs
+
+### Request & Mission Catalogs
+
+- **[Request Status](/api/catalogs/estado-solicitud)** - Manage request statuses with workflow ordering
+- **[Mission Status](/api/catalogs/estado-mision)** - Track mission states
+- **[Priority Type](/api/catalogs/tipo-prioridad)** - Define request priority levels
+- **[Service Type](/api/catalogs/tipo-servicio)** - Categorize service types for requests
+
+### Vehicle Catalogs
+
+- **[Vehicle Status](/api/catalogs/estado-vehiculo)** - Control vehicle availability states
+- **[Vehicle Class](/api/catalogs/clase-vehiculo)** - Categorize vehicle types
+- **[Fuel Type](/api/catalogs/tipo-combustible)** - Manage fuel type options
+
+### Driver Catalogs
+
+- **[License Type](/api/catalogs/tipo-licencia)** - Define driver license categories
+- **[Availability Type](/api/catalogs/tipo-disponibilidad)** - Manage driver availability statuses
+
+## Common Features
+
+All catalog endpoints share these characteristics:
+
+### CRUD Operations
+
+- **POST /** - Create new catalog entry
+- **GET /{id}** - Retrieve single entry by ID
+- **GET /** - List entries with pagination and filters
+- **GET /todos/lista** - List all active entries (no pagination, ideal for dropdowns)
+- **PUT /{id}** - Update existing entry
+- **DELETE /{id}** - Soft delete entry
+
+### Validation Rules
+
+- **Unique constraints** - Code and name fields must be unique across active records
+- **Code formatting** - Codes are uppercase, no spaces allowed
+- **Soft deletion** - Records are marked inactive rather than physically deleted
+- **Referential integrity** - Cannot delete entries referenced by active records
+
+### Response Format
+
+All endpoints return standardized responses:
+
+```json
+{
+  "success": true,
+  "message": "Operación exitosa",
+  "data": { ... }
+}
+```
+
+### Error Handling
+
+- **400** - Bad request (validation errors)
+- **404** - Not found
+- **409** - Conflict (duplicate code/name)
+- **500** - Internal server error
+
+## Filter Capabilities
+
+Most catalog endpoints support:
+
+- **codigo** - Partial match on code field
+- **nombre** - Partial match on name field  
+- **busqueda** - General search across multiple fields
+- Catalog-specific filters (e.g., `esEstadoFinal`, `permiteAsignacion`)
+
+## Pagination
+
+Paginated endpoints accept:
+
+- **pagina** - Page number (min: 1)
+- **por_pagina** - Records per page (min: 1, max: 100)
+
+Response includes:
+
+```json
+{
+  "items": [...],
+  "total": 50,
+  "pagina": 1,
+  "porPagina": 10,
+  "totalPaginas": 5
+}
+```

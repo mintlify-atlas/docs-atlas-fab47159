@@ -1,0 +1,112 @@
+---
+title: 'Assign Vehicle and Driver'
+api: 'POST /mision/{id}/asignar'
+description: 'Assign a vehicle and driver to a scheduled mission'
+---
+
+## Assign Vehicle and Driver
+
+Assigns a vehicle and driver to a mission in `PROGRAMADA` (scheduled) state.
+
+### Path Parameters
+
+<ParamField path="id" type="integer" required>
+  ID of the mission to assign resources to.
+</ParamField>
+
+### Request Body
+
+<ParamField body="idVehiculoAsignado" type="integer" required>
+  ID of the vehicle to assign. The vehicle must exist and not be deleted.
+</ParamField>
+
+<ParamField body="idMotoristaAsignado" type="integer" required>
+  ID of the driver (Profile) to assign. The driver must exist and not be deleted.
+</ParamField>
+
+### Response
+
+<ResponseField name="success" type="boolean">
+  Indicates if the request was successful.
+</ResponseField>
+
+<ResponseField name="message" type="string">
+  Response message: "Vehículo y motorista asignados exitosamente"
+</ResponseField>
+
+<ResponseField name="data" type="object">
+  The updated mission object with assigned vehicle and driver.
+</ResponseField>
+
+### Validations
+
+- Mission must be in `PROGRAMADA` state
+- Vehicle and driver must exist and not be deleted
+- Vehicle cannot have another active mission on the same date
+- Driver cannot have another active mission on the same date
+
+<RequestExample>
+```bash cURL
+curl -X POST "https://api.example.com/mision/1/asignar" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "idVehiculoAsignado": 1,
+    "idMotoristaAsignado": 5
+  }'
+```
+</RequestExample>
+
+<ResponseExample>
+```json 200 - Success
+{
+  "success": true,
+  "message": "Vehículo y motorista asignados exitosamente",
+  "data": {
+    "idMision": 1,
+    "idSolicitud": 1,
+    "idVehiculoAsignado": 1,
+    "idMotoristaAsignado": 5,
+    "descripcion": "Traslado de personal al aeropuerto",
+    "fechaProgramada": "2025-06-15",
+    "horaSalidaProgramada": "08:00:00",
+    "idEstadoMision": 1,
+    "codigoEstado": "PROGRAMADA"
+  }
+}
+```
+
+```json 404 - Mission Not Found
+{
+  "success": false,
+  "message": "Misión no encontrada"
+}
+```
+
+```json 409 - Invalid State
+{
+  "success": false,
+  "message": "La misión debe estar en estado PROGRAMADA para asignar recursos"
+}
+```
+
+```json 409 - Vehicle Already Assigned
+{
+  "success": false,
+  "message": "El vehículo ya tiene una misión activa en la fecha programada"
+}
+```
+
+```json 409 - Driver Already Assigned
+{
+  "success": false,
+  "message": "El motorista ya tiene una misión activa en la fecha programada"
+}
+```
+
+```json 422 - Validation Error
+{
+  "success": false,
+  "message": "El vehículo no existe o está eliminado"
+}
+```
+</ResponseExample>

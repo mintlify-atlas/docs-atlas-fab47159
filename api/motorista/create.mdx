@@ -1,0 +1,250 @@
+---
+title: 'Create Driver'
+api: 'POST /motorista'
+description: 'Create a new driver with complete details or simplified via DUI lookup'
+---
+
+## Complete Driver Creation
+
+Creates a driver with all personal and professional details. This endpoint automatically creates related records (User, Profile, ProfileRole, and DriverProfileDetail) in a single transactional operation.
+
+### Endpoint
+
+```
+POST /motorista
+```
+
+### Request Body
+
+<ParamField body="email" type="string" required>
+  Driver's email address. Must be unique and valid format.
+</ParamField>
+
+<ParamField body="nombre1" type="string" required>
+  First name (max 100 characters)
+</ParamField>
+
+<ParamField body="nombre2" type="string">
+  Second name (max 100 characters)
+</ParamField>
+
+<ParamField body="nombre3" type="string">
+  Third name (max 100 characters)
+</ParamField>
+
+<ParamField body="apellido1" type="string" required>
+  First surname (max 100 characters)
+</ParamField>
+
+<ParamField body="apellido2" type="string">
+  Second surname (max 100 characters)
+</ParamField>
+
+<ParamField body="apellido3" type="string">
+  Married name (max 100 characters)
+</ParamField>
+
+<ParamField body="telefono" type="string" required>
+  Contact phone number (max 20 characters)
+</ParamField>
+
+<ParamField body="dui" type="string" required>
+  National ID number. Format: `########-#` (8 digits, hyphen, 1 digit). Must be unique.
+</ParamField>
+
+<ParamField body="nit" type="string">
+  Tax identification number (max 17 characters)
+</ParamField>
+
+<ParamField body="direccion" type="string">
+  Residential address (max 500 characters)
+</ParamField>
+
+<ParamField body="observaciones" type="string">
+  Additional observations or notes
+</ParamField>
+
+<ParamField body="idDepartamentoAsignado" type="integer" required>
+  ID of the assigned department. Must reference an existing department.
+</ParamField>
+
+<ParamField body="idTipoLicencia" type="integer" required>
+  ID of the license type. Must reference an existing license type.
+</ParamField>
+
+<ParamField body="numeroLicencia" type="string" required>
+  Driver's license number (max 50 characters)
+</ParamField>
+
+<ParamField body="fechaVencimientoLicencia" type="string" required>
+  License expiration date. Format: `YYYY-MM-DD`
+</ParamField>
+
+<ParamField body="imei" type="string">
+  Mobile device IMEI (max 100 characters). Must be unique if provided.
+</ParamField>
+
+### Response
+
+<ResponseField name="success" type="boolean">
+  Indicates if the operation was successful
+</ResponseField>
+
+<ResponseField name="message" type="string">
+  Success or error message
+</ResponseField>
+
+<ResponseField name="data" type="object">
+  Created driver information including profile ID and all details
+</ResponseField>
+
+### Example Request
+
+```json
+{
+  "email": "motorista@ejemplo.com",
+  "nombre1": "JUAN",
+  "nombre2": "CARLOS",
+  "apellido1": "MARTINEZ",
+  "apellido2": "LOPEZ",
+  "telefono": "7777-8888",
+  "dui": "12345678-9",
+  "direccion": "Col. Escalón, San Salvador",
+  "idDepartamentoAsignado": 1,
+  "idTipoLicencia": 1,
+  "numeroLicencia": "A-12345",
+  "fechaVencimientoLicencia": "2026-12-31"
+}
+```
+
+### Example Response
+
+```json
+{
+  "success": true,
+  "message": "Motorista creado exitosamente",
+  "data": {
+    "idPerfil": 123,
+    "nombreCompleto": "JUAN CARLOS MARTINEZ LOPEZ",
+    "email": "motorista@ejemplo.com",
+    "dui": "12345678-9"
+  }
+}
+```
+
+### Status Codes
+
+- `201`: Driver created successfully
+- `400`: Validation error (invalid format)
+- `409`: Conflict (duplicate email, DUI, or IMEI)
+- `500`: Internal server error
+
+---
+
+## Simplified Creation via DUI
+
+Creates a driver by querying the external DUI database to automatically populate personal information (names, surnames, and address).
+
+### Endpoint
+
+```
+POST /motorista/crear-por-dui
+```
+
+### Request Body
+
+<ParamField body="dui" type="string" required>
+  National ID number. Format: `########-#`. System will query external API for personal data.
+</ParamField>
+
+<ParamField body="email" type="string" required>
+  Driver's email address
+</ParamField>
+
+<ParamField body="telefono" type="string" required>
+  Contact phone number
+</ParamField>
+
+<ParamField body="idDepartamentoAsignado" type="integer" required>
+  ID of the assigned department
+</ParamField>
+
+<ParamField body="idTipoLicencia" type="integer" required>
+  ID of the license type
+</ParamField>
+
+<ParamField body="numeroLicencia" type="string" required>
+  Driver's license number
+</ParamField>
+
+<ParamField body="fechaVencimientoLicencia" type="string" required>
+  License expiration date. Format: `YYYY-MM-DD`
+</ParamField>
+
+<ParamField body="imei" type="string">
+  Mobile device IMEI (optional)
+</ParamField>
+
+### Response
+
+Same structure as complete creation endpoint.
+
+### Example Request
+
+```json
+{
+  "dui": "12345678-9",
+  "email": "motorista@ejemplo.com",
+  "telefono": "7777-8888",
+  "idDepartamentoAsignado": 1,
+  "idTipoLicencia": 1,
+  "numeroLicencia": "A-12345",
+  "fechaVencimientoLicencia": "2026-12-31"
+}
+```
+
+### Status Codes
+
+- `201`: Driver created successfully
+- `400`: Validation error
+- `404`: DUI not found in external database
+- `409`: Conflict (duplicate email or DUI)
+- `500`: Internal server error
+- `502/503`: External DUI service unavailable
+
+---
+
+## DUI Lookup
+
+Query the external DUI database to retrieve citizen information before creating a driver.
+
+### Endpoint
+
+```
+GET /motorista/consulta-dui/{dui}
+```
+
+### Path Parameters
+
+<ParamField path="dui" type="string" required>
+  National ID number to query. Format: `########-#`
+</ParamField>
+
+### Response
+
+Returns personal information from the national registry:
+- Names and surnames
+- Date of birth
+- Address
+- Gender
+- Profession
+- Residence
+
+**Note**: Does not include signature or photo (base64 fields excluded for performance).
+
+### Status Codes
+
+- `200`: Data retrieved successfully
+- `404`: DUI not found
+- `500`: Internal server error
+- `502/503`: External service unavailable

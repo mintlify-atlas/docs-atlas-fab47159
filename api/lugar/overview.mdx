@@ -1,0 +1,107 @@
+---
+title: 'Lugar API'
+description: 'Location and place management endpoints'
+icon: 'location-dot'
+---
+
+## Overview
+
+The Lugar API provides comprehensive location management capabilities including CRUD operations for places, with support for filtering by location type and frequently visited points.
+
+## Endpoints
+
+### Create Location
+
+**POST** `/lugar/`
+
+Creates a new location record.
+
+**Validations:**
+- Unique constraints on location code
+- Valid location type
+- All required fields must be provided
+
+---
+
+### List All Locations (Unpaginated)
+
+**GET** `/lugar/todos/lista`
+
+Retrieves all active locations without pagination. Useful for dropdowns and selection lists.
+
+**Query Parameters:**
+- `codigo` (string, optional): Filter by location code
+- `nombre` (string, optional): Filter by name
+- `tipoLugar` (string, optional): Filter by location type
+- `esPuntoFrecuente` (boolean, optional): Filter by frequent point status
+- `busqueda` (string, optional): General search across multiple fields
+
+---
+
+### List Locations (Paginated)
+
+**GET** `/lugar/`
+
+Retrieves locations with pagination support.
+
+**Query Parameters:**
+- `pagina` (integer, default: 1): Page number
+- `por_pagina` (integer, default: 10, max: 100): Records per page
+- `codigo` (string, optional): Filter by location code
+- `nombre` (string, optional): Filter by name
+- `tipoLugar` (string, optional): Filter by location type
+- `esPuntoFrecuente` (boolean, optional): Filter by frequent point status
+- `busqueda` (string, optional): General search across multiple fields
+
+---
+
+### Get Location by ID
+
+**GET** `/lugar/{id_lugar}`
+
+Retrieves a specific location by its ID.
+
+**Path Parameters:**
+- `id_lugar` (integer, required): The location ID
+
+---
+
+### Update Location
+
+**PUT** `/lugar/{id_lugar}`
+
+Updates an existing location record.
+
+**Path Parameters:**
+- `id_lugar` (integer, required): The location ID
+
+**Validations:**
+- Location must exist and be active
+- Unique constraints validated on updates
+- Prevents conflicts with existing records
+
+---
+
+### Delete Location
+
+**DELETE** `/lugar/{id_lugar}`
+
+Performs logical deletion of a location.
+
+**Path Parameters:**
+- `id_lugar` (integer, required): The location ID
+
+**Validations:**
+- Location must exist and be active
+- Checks for dependencies before deletion
+- Cannot delete if location is referenced by active records
+
+---
+
+## Response Codes
+
+- **200**: Success
+- **201**: Created
+- **404**: Not found
+- **409**: Conflict (duplicate or dependency violation)
+- **500**: Internal server error

@@ -1,0 +1,192 @@
+---
+title: 'List Missions'
+description: 'Get missions with pagination, filters, and by request'
+---
+
+## List Missions
+
+Retrieve missions with pagination and filtering options, or get all missions for a specific request.
+
+---
+
+## GET /mision
+
+List missions with pagination and multiple filter options.
+
+### Query Parameters
+
+<ParamField query="pagina" type="integer" default="1">
+  Page number. Must be >= 1.
+</ParamField>
+
+<ParamField query="porPagina" type="integer" default="10">
+  Records per page. Must be between 1 and 100.
+</ParamField>
+
+<ParamField query="idSolicitud" type="integer">
+  Filter by request ID.
+</ParamField>
+
+<ParamField query="idEstadoMision" type="integer">
+  Filter by mission state ID.
+</ParamField>
+
+<ParamField query="codigoEstado" type="string">
+  Filter by state code (e.g., `PROGRAMADA`, `EN_EJECUCION`, `COMPLETADA`, `CANCELADA`).
+</ParamField>
+
+<ParamField query="idVehiculo" type="integer">
+  Filter by assigned vehicle ID.
+</ParamField>
+
+<ParamField query="idMotorista" type="integer">
+  Filter by assigned driver ID.
+</ParamField>
+
+<ParamField query="fechaDesde" type="string">
+  Filter by start date in `YYYY-MM-DD` format.
+</ParamField>
+
+<ParamField query="fechaHasta" type="string">
+  Filter by end date in `YYYY-MM-DD` format.
+</ParamField>
+
+<ParamField query="busqueda" type="string">
+  General search term.
+</ParamField>
+
+### Response
+
+<ResponseField name="success" type="boolean">
+  Indicates if the request was successful.
+</ResponseField>
+
+<ResponseField name="message" type="string">
+  Response message: "Listado de misiones obtenido exitosamente"
+</ResponseField>
+
+<ResponseField name="data" type="object">
+  Paginated mission data.
+  
+  <Expandable title="Pagination Object">
+    <ResponseField name="items" type="array">
+      Array of mission objects.
+    </ResponseField>
+    
+    <ResponseField name="total" type="integer">
+      Total number of missions matching the filters.
+    </ResponseField>
+    
+    <ResponseField name="pagina" type="integer">
+      Current page number.
+    </ResponseField>
+    
+    <ResponseField name="porPagina" type="integer">
+      Number of items per page.
+    </ResponseField>
+    
+    <ResponseField name="totalPaginas" type="integer">
+      Total number of pages.
+    </ResponseField>
+  </Expandable>
+</ResponseField>
+
+<RequestExample>
+```bash cURL - Basic
+curl -X GET "https://api.example.com/mision?pagina=1&porPagina=10"
+```
+
+```bash cURL - Filtered
+curl -X GET "https://api.example.com/mision?idSolicitud=1&codigoEstado=EN_EJECUCION&fechaDesde=2025-06-01&fechaHasta=2025-06-30"
+```
+</RequestExample>
+
+<ResponseExample>
+```json 200 - Success
+{
+  "success": true,
+  "message": "Listado de misiones obtenido exitosamente",
+  "data": {
+    "items": [
+      {
+        "idMision": 1,
+        "idSolicitud": 1,
+        "idVehiculoAsignado": 1,
+        "idMotoristaAsignado": 5,
+        "descripcion": "Traslado de personal al aeropuerto",
+        "fechaProgramada": "2025-06-15",
+        "horaSalidaProgramada": "08:00:00",
+        "idEstadoMision": 2,
+        "codigoEstado": "EN_EJECUCION"
+      }
+    ],
+    "total": 45,
+    "pagina": 1,
+    "porPagina": 10,
+    "totalPaginas": 5
+  }
+}
+```
+</ResponseExample>
+
+---
+
+## GET /mision/por-solicitud/{id}
+
+List all active missions for a specific request, including stops.
+
+### Path Parameters
+
+<ParamField path="id" type="integer" required>
+  ID of the request to get missions for.
+</ParamField>
+
+### Response
+
+<ResponseField name="success" type="boolean">
+  Indicates if the request was successful.
+</ResponseField>
+
+<ResponseField name="message" type="string">
+  Response message: "Misiones de la solicitud obtenidas exitosamente"
+</ResponseField>
+
+<ResponseField name="data" type="array">
+  Array of mission objects with stops included.
+</ResponseField>
+
+<RequestExample>
+```bash cURL
+curl -X GET "https://api.example.com/mision/por-solicitud/1"
+```
+</RequestExample>
+
+<ResponseExample>
+```json 200 - Success
+{
+  "success": true,
+  "message": "Misiones de la solicitud obtenidas exitosamente",
+  "data": [
+    {
+      "idMision": 1,
+      "idSolicitud": 1,
+      "descripcion": "Traslado de personal al aeropuerto",
+      "fechaProgramada": "2025-06-15",
+      "horaSalidaProgramada": "08:00:00",
+      "idEstadoMision": 2,
+      "codigoEstado": "EN_EJECUCION",
+      "paradas": [
+        {
+          "idMisionParada": 1,
+          "idLugarDestino": 2,
+          "numeroParada": 1,
+          "descripcion": "Entrega en sucursal norte",
+          "esParadaFinal": false,
+          "fechaHoraLlegadaEstimada": "2025-06-15 09:30:00"
+        }
+      ]
+    }
+  ]
+}
+```
+</ResponseExample>

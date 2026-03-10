@@ -1,0 +1,268 @@
+---
+title: Service Type Catalog
+description: Manage service type catalog for request service classification
+---
+
+# Service Type Catalog API
+
+Manage the catalog of service types (TipoServicioSolicitud) used to categorize different types of services in transportation requests. Note: This catalog only has a `Nombre` field (no `Codigo` field).
+
+**Base Path:** `/tipo-servicio-solicitud`
+
+## Endpoints
+
+### Create Service Type
+
+```http
+POST /tipo-servicio-solicitud/
+```
+
+Creates a new service type.
+
+#### Request Body
+
+```json
+{
+  "nombre": "Transporte de Personal"
+}
+```
+
+#### Field Validations
+
+- **nombre** (required): Unique across active records, max 50 characters
+
+#### Response
+
+```json
+{
+  "success": true,
+  "message": "Tipo de servicio creado exitosamente",
+  "data": {
+    "IdTipoServicioSolicitud": 1,
+    "Nombre": "Transporte de Personal",
+    "EsActivo": true
+  }
+}
+```
+
+---
+
+### Get Service Type by ID
+
+```http
+GET /tipo-servicio-solicitud/{id_tipo_servicio}
+```
+
+Retrieves a specific service type by ID. Only returns active records.
+
+#### Path Parameters
+
+- **id_tipo_servicio** (integer, required): Service type ID
+
+#### Response
+
+```json
+{
+  "success": true,
+  "message": "Tipo de servicio obtenido exitosamente",
+  "data": {
+    "IdTipoServicioSolicitud": 1,
+    "Nombre": "Transporte de Personal",
+    "EsActivo": true
+  }
+}
+```
+
+---
+
+### List Service Types (Paginated)
+
+```http
+GET /tipo-servicio-solicitud/
+```
+
+Lists service types with pagination and optional filters.
+
+#### Query Parameters
+
+- **pagina** (integer, optional, default: 1): Page number (min: 1)
+- **por_pagina** (integer, optional, default: 10): Records per page (min: 1, max: 100)
+- **nombre** (string, optional): Filter by name (partial match)
+- **busqueda** (string, optional): General search in name
+
+#### Response
+
+```json
+{
+  "success": true,
+  "message": "Listado de tipos de servicio obtenido exitosamente",
+  "data": {
+    "items": [
+      {
+        "IdTipoServicioSolicitud": 1,
+        "Nombre": "Transporte de Personal",
+        "EsActivo": true
+      },
+      {
+        "IdTipoServicioSolicitud": 2,
+        "Nombre": "Transporte de Carga",
+        "EsActivo": true
+      },
+      {
+        "IdTipoServicioSolicitud": 3,
+        "Nombre": "Servicio Administrativo",
+        "EsActivo": true
+      }
+    ],
+    "total": 5,
+    "pagina": 1,
+    "porPagina": 10,
+    "totalPaginas": 1
+  }
+}
+```
+
+---
+
+### List All Service Types (No Pagination)
+
+```http
+GET /tipo-servicio-solicitud/todos/lista
+```
+
+Retrieves all active service types without pagination. Ideal for dropdowns and select components.
+
+#### Query Parameters
+
+- **nombre** (string, optional): Filter by name
+- **busqueda** (string, optional): General search
+
+#### Response
+
+```json
+{
+  "success": true,
+  "message": "Listado completo de tipos de servicio obtenido exitosamente",
+  "data": [
+    {
+      "IdTipoServicioSolicitud": 1,
+      "Nombre": "Transporte de Personal"
+    },
+    {
+      "IdTipoServicioSolicitud": 2,
+      "Nombre": "Transporte de Carga"
+    },
+    {
+      "IdTipoServicioSolicitud": 3,
+      "Nombre": "Servicio Administrativo"
+    }
+  ]
+}
+```
+
+---
+
+### Update Service Type
+
+```http
+PUT /tipo-servicio-solicitud/{id_tipo_servicio}
+```
+
+Updates an existing service type. Only provided fields are updated.
+
+#### Path Parameters
+
+- **id_tipo_servicio** (integer, required): Service type ID
+
+#### Request Body
+
+```json
+{
+  "nombre": "Transporte Ejecutivo"
+}
+```
+
+#### Validations
+
+- Record must exist and be active
+- If changing `nombre`, must be unique
+
+#### Response
+
+```json
+{
+  "success": true,
+  "message": "Tipo de servicio actualizado exitosamente",
+  "data": {
+    "IdTipoServicioSolicitud": 1,
+    "Nombre": "Transporte Ejecutivo",
+    "EsActivo": true
+  }
+}
+```
+
+---
+
+### Delete Service Type
+
+```http
+DELETE /tipo-servicio-solicitud/{id_tipo_servicio}
+```
+
+Performs a soft delete on a service type. Cannot delete if there are active requests using this service type.
+
+#### Path Parameters
+
+- **id_tipo_servicio** (integer, required): Service type ID
+
+#### Validations
+
+- Record must exist and be active
+- Cannot have active requests (solicitudes) associated
+
+#### Response
+
+```json
+{
+  "success": true,
+  "message": "Tipo de servicio eliminado exitosamente",
+  "data": {
+    "IdTipoServicioSolicitud": 1,
+    "EsActivo": false
+  }
+}
+```
+
+---
+
+## Error Responses
+
+### 404 Not Found
+
+```json
+{
+  "success": false,
+  "message": "Tipo de servicio no encontrado",
+  "data": null
+}
+```
+
+### 409 Conflict
+
+```json
+{
+  "success": false,
+  "message": "Ya existe un tipo de servicio con ese nombre",
+  "data": null
+}
+```
+
+### 500 Internal Server Error
+
+```json
+{
+  "success": false,
+  "message": "Error interno del servidor",
+  "data": null
+}
+```

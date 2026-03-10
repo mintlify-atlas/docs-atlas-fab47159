@@ -1,0 +1,171 @@
+---
+title: 'Get Mission'
+description: 'Retrieve mission details and vehicle mileage'
+---
+
+## Get Mission Details
+
+Retrieve specific mission information or get the last recorded mileage for a vehicle.
+
+---
+
+## GET /mision/{id}
+
+Get a specific mission with stops and invoices included.
+
+### Path Parameters
+
+<ParamField path="id" type="integer" required>
+  ID of the mission to retrieve.
+</ParamField>
+
+### Response
+
+<ResponseField name="success" type="boolean">
+  Indicates if the request was successful.
+</ResponseField>
+
+<ResponseField name="message" type="string">
+  Response message: "Misión obtenida exitosamente"
+</ResponseField>
+
+<ResponseField name="data" type="object">
+  The mission object with complete details including stops and invoices.
+</ResponseField>
+
+<RequestExample>
+```bash cURL
+curl -X GET "https://api.example.com/mision/1"
+```
+</RequestExample>
+
+<ResponseExample>
+```json 200 - Success
+{
+  "success": true,
+  "message": "Misión obtenida exitosamente",
+  "data": {
+    "idMision": 1,
+    "idSolicitud": 1,
+    "idVehiculoAsignado": 1,
+    "idMotoristaAsignado": 5,
+    "idLugarOrigen": 1,
+    "idLugarDestino": 2,
+    "descripcion": "Traslado de personal al aeropuerto",
+    "fechaProgramada": "2025-06-15",
+    "horaSalidaProgramada": "08:00:00",
+    "horaLlegadaEstimada": "09:30:00",
+    "kilometrajeInicio": 45230,
+    "kilometrajeFin": 45450,
+    "kilometrajeRecorrido": 220,
+    "combustibleInicialGalones": 12.5,
+    "combustibleFinalGalones": 8.0,
+    "combustibleConsumidoGalones": 4.5,
+    "observaciones": "Llevar documentos",
+    "incidencias": "Sin novedad",
+    "idEstadoMision": 5,
+    "codigoEstado": "COMPLETADA",
+    "fechaHoraInicio": "2025-06-15 08:05:30",
+    "fechaHoraFin": "2025-06-15 09:45:20",
+    "paradas": [
+      {
+        "idMisionParada": 1,
+        "idLugarDestino": 2,
+        "numeroParada": 1,
+        "descripcion": "Aeropuerto Internacional",
+        "esParadaFinal": true,
+        "fechaHoraLlegadaEstimada": "2025-06-15 09:30:00",
+        "fechaHoraLlegadaReal": "2025-06-15 09:28:15"
+      }
+    ],
+    "facturas": []
+  }
+}
+```
+
+```json 404 - Not Found
+{
+  "success": false,
+  "message": "Misión no encontrada"
+}
+```
+</ResponseExample>
+
+---
+
+## GET /mision/kilometraje/{placa}
+
+Get the last recorded mileage for a vehicle by license plate.
+
+### Path Parameters
+
+<ParamField path="placa" type="string" required>
+  License plate of the vehicle.
+</ParamField>
+
+### Response
+
+<ResponseField name="success" type="boolean">
+  Indicates if the request was successful.
+</ResponseField>
+
+<ResponseField name="message" type="string">
+  Response message: "Último kilometraje obtenido exitosamente"
+</ResponseField>
+
+<ResponseField name="data" type="object">
+  Object containing the vehicle information and last mileage.
+  
+  <Expandable title="Mileage Object">
+    <ResponseField name="placa" type="string">
+      Vehicle license plate.
+    </ResponseField>
+    
+    <ResponseField name="idVehiculo" type="integer">
+      Vehicle ID.
+    </ResponseField>
+    
+    <ResponseField name="ultimoKilometraje" type="integer">
+      Last recorded mileage. Returns 0 if the vehicle has no completed missions.
+    </ResponseField>
+  </Expandable>
+</ResponseField>
+
+<RequestExample>
+```bash cURL
+curl -X GET "https://api.example.com/mision/kilometraje/ABC123"
+```
+</RequestExample>
+
+<ResponseExample>
+```json 200 - Success
+{
+  "success": true,
+  "message": "Último kilometraje obtenido exitosamente",
+  "data": {
+    "placa": "ABC123",
+    "idVehiculo": 1,
+    "ultimoKilometraje": 45450
+  }
+}
+```
+
+```json 200 - No Missions
+{
+  "success": true,
+  "message": "Último kilometraje obtenido exitosamente",
+  "data": {
+    "placa": "XYZ789",
+    "idVehiculo": 5,
+    "ultimoKilometraje": 0
+  }
+}
+```
+
+```json 404 - Vehicle Not Found
+{
+  "success": false,
+  "message": "Vehículo con placa ABC123 no encontrado"
+}
+```
+</ResponseExample>

@@ -1,0 +1,281 @@
+---
+title: 'Create Vehicle by Plate'
+api: 'POST /vehiculo/crear-por-placa'
+description: 'Create a vehicle by querying external license plate API'
+---
+
+## Endpoint
+
+<ParamField path="method" type="string" default="POST">
+  POST
+</ParamField>
+
+<ParamField path="endpoint" type="string">
+  /vehiculo/crear-por-placa
+</ParamField>
+
+## Description
+
+Creates a vehicle by automatically retrieving vehicle data from an external license plate API. This endpoint simplifies vehicle creation by requiring only the license plate and optional fields, while the system automatically populates most vehicle information.
+
+## How It Works
+
+<Steps>
+  <Step title="Authentication">
+    The system authenticates with the external license plate API
+  </Step>
+  
+  <Step title="Data Retrieval">
+    Queries vehicle data from the external API using the provided license plate
+  </Step>
+  
+  <Step title="Owner Verification">
+    Verifies that the vehicle owner belongs to the institution (configurable via `PLACA_API_PROPIETARIO_FILTRO` environment variable)
+  </Step>
+  
+  <Step title="Class Mapping">
+    Automatically searches for the vehicle class in the catalog based on the name returned by the API
+  </Step>
+  
+  <Step title="Auto-Population">
+    Auto-fills: brand, model, year, color, engine number, chassis number, VIN, circulation card date, and insurance policy
+  </Step>
+  
+  <Step title="Vehicle Creation">
+    Creates the vehicle with the retrieved data and optional IDs provided in the request
+  </Step>
+</Steps>
+
+## Request Body
+
+<ParamField body="placa" type="string" required>
+  Vehicle license plate to query in the external API. Automatically converted to uppercase and spaces removed.
+  
+  **Example**: `"P503067"`
+</ParamField>
+
+<ParamField body="idTipoCombustible" type="integer">
+  ID of the fuel type. Optional. Must exist if provided.
+  
+  **Example**: `1`
+</ParamField>
+
+<ParamField body="idDepartamentoAsignado" type="integer">
+  ID of the assigned department. Optional. Must exist if provided.
+  
+  **Example**: `2`
+</ParamField>
+
+<ParamField body="observaciones" type="string">
+  Additional observations.
+  
+  **Example**: `"Vehículo ingresado desde API de placas"`
+</ParamField>
+
+## Validations
+
+<Warning>
+  **Important Validations**
+  
+  - **placa**: Required
+  - **Vehicle class**: Returned by the API must exist in the system catalog (ClaseVehiculo)
+  - **Owner verification**: Vehicle owner must belong to the institution (see `PLACA_API_PROPIETARIO_FILTRO`)
+</Warning>
+
+## Auto-Populated Fields
+
+The following fields are automatically populated from the external API:
+
+- `marca` - Vehicle brand
+- `modelo` - Vehicle model
+- `anio` - Year of manufacture
+- `color` - Vehicle color
+- `numeroMotor` - Engine number
+- `numeroChasis` - Chassis number
+- `numeroVin` - VIN number
+- `fechaTarjetaCirculacion` - Circulation card date
+- `numeroPolizaSeguro` - Insurance policy number
+- `idClaseVehiculo` - Vehicle class ID (mapped from API response)
+- `idEstadoVehiculo` - Set to default active state
+
+## Response
+
+<ResponseField name="success" type="boolean">
+  Indicates if the operation was successful
+</ResponseField>
+
+<ResponseField name="message" type="string">
+  Success message: "Vehículo creado exitosamente desde API de placas"
+</ResponseField>
+
+<ResponseField name="data" type="object">
+  The created vehicle object with all fields populated from the external API and resolved foreign key names
+  
+  <Expandable title="Vehicle Object Properties">
+    <ResponseField name="Id" type="integer">
+      Unique vehicle identifier
+    </ResponseField>
+    
+    <ResponseField name="Placa" type="string">
+      Vehicle license plate
+    </ResponseField>
+    
+    <ResponseField name="Marca" type="string">
+      Vehicle brand (from external API)
+    </ResponseField>
+    
+    <ResponseField name="Modelo" type="string">
+      Vehicle model (from external API)
+    </ResponseField>
+    
+    <ResponseField name="Anio" type="integer">
+      Year of manufacture (from external API)
+    </ResponseField>
+    
+    <ResponseField name="Color" type="string">
+      Vehicle color (from external API)
+    </ResponseField>
+    
+    <ResponseField name="NumeroMotor" type="string">
+      Engine number (from external API)
+    </ResponseField>
+    
+    <ResponseField name="NumeroChasis" type="string">
+      Chassis number (from external API)
+    </ResponseField>
+    
+    <ResponseField name="NumeroVin" type="string">
+      VIN number (from external API)
+    </ResponseField>
+    
+    <ResponseField name="FechaTarjetaCirculacion" type="string">
+      Circulation card date (from external API)
+    </ResponseField>
+    
+    <ResponseField name="NumeroPolizaSeguro" type="string">
+      Insurance policy number (from external API)
+    </ResponseField>
+    
+    <ResponseField name="IdClaseVehiculo" type="integer">
+      Vehicle class ID (mapped from API)
+    </ResponseField>
+    
+    <ResponseField name="NombreClaseVehiculo" type="string">
+      Vehicle class name (resolved)
+    </ResponseField>
+    
+    <ResponseField name="IdEstadoVehiculo" type="integer">
+      Vehicle state ID
+    </ResponseField>
+    
+    <ResponseField name="NombreEstadoVehiculo" type="string">
+      Vehicle state name (resolved)
+    </ResponseField>
+    
+    <ResponseField name="FechaHoraCreacion" type="string">
+      Creation timestamp
+    </ResponseField>
+  </Expandable>
+</ResponseField>
+
+<ResponseField name="timestamp" type="string">
+  Response timestamp
+</ResponseField>
+
+## Example Request
+
+```json
+{
+  "placa": "P503067",
+  "idTipoCombustible": 1,
+  "idDepartamentoAsignado": 2,
+  "observaciones": "Vehículo ingresado desde API de placas"
+}
+```
+
+## Example Response
+
+```json
+{
+  "success": true,
+  "message": "Vehículo creado exitosamente desde API de placas",
+  "data": {
+    "Id": 1,
+    "Placa": "P503067",
+    "Marca": "TOYOTA",
+    "Modelo": "HILUX 4X4",
+    "Anio": 2020,
+    "Color": "BLANCO",
+    "NumeroMotor": "1GRFE123456",
+    "NumeroChasis": "JT123456789012345",
+    "NumeroVin": "JT123456789012345",
+    "FechaTarjetaCirculacion": "2023-12-01",
+    "NumeroPolizaSeguro": "POL123456789",
+    "IdClaseVehiculo": 1,
+    "NombreClaseVehiculo": "Pick-up",
+    "IdEstadoVehiculo": 1,
+    "NombreEstadoVehiculo": "Activo",
+    "IdTipoCombustible": 1,
+    "NombreTipoCombustible": "Diesel",
+    "IdDepartamentoAsignado": 2,
+    "NombreDepartamentoAsignado": "Logística",
+    "Observaciones": "Vehículo ingresado desde API de placas",
+    "Eliminado": false,
+    "FechaHoraCreacion": "2024-01-15T10:30:00Z",
+    "FechaHoraActualizacion": null
+  },
+  "timestamp": "2024-01-15T10:30:00Z"
+}
+```
+
+## Error Responses
+
+<ResponseExample>
+```json 404 Not Found - Plate Not Found
+{
+  "success": false,
+  "message": "No se encontró información para la placa P503067 en la API externa",
+  "timestamp": "2024-01-15T10:30:00Z"
+}
+```
+
+```json 403 Forbidden - Owner Verification Failed
+{
+  "success": false,
+  "message": "El vehículo no pertenece a la institución autorizada",
+  "timestamp": "2024-01-15T10:30:00Z"
+}
+```
+
+```json 404 Not Found - Vehicle Class Not Found
+{
+  "success": false,
+  "message": "No se encontró la clase de vehículo 'Sedán' en el catálogo del sistema",
+  "timestamp": "2024-01-15T10:30:00Z"
+}
+```
+
+```json 409 Conflict - Duplicate Plate
+{
+  "success": false,
+  "message": "Ya existe un vehículo con la placa P503067",
+  "timestamp": "2024-01-15T10:30:00Z"
+}
+```
+
+```json 502/503/504 External API Error
+{
+  "success": false,
+  "message": "Error al conectar con la API externa de placas",
+  "timestamp": "2024-01-15T10:30:00Z"
+}
+```
+</ResponseExample>
+
+## Configuration
+
+<Info>
+  **Environment Variable**: `PLACA_API_PROPIETARIO_FILTRO`
+  
+  This variable configures which institution owners are allowed. Only vehicles belonging to the configured institution can be created through this endpoint.
+</Info>

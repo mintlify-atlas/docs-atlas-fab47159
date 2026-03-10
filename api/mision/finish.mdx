@@ -1,0 +1,113 @@
+---
+title: 'Finish Mission'
+api: 'POST /mision/{id}/finalizar'
+description: 'Complete a mission in progress and record final metrics'
+---
+
+## Finish Mission
+
+Finalizes a mission by changing its state to `COMPLETADA` and recording final mileage and fuel consumption.
+
+### Path Parameters
+
+<ParamField path="id" type="integer" required>
+  ID of the mission to finish.
+</ParamField>
+
+### Request Body
+
+<ParamField body="kilometrajeFin" type="integer" required>
+  Final mileage reading from the vehicle odometer. Must be >= 0.
+</ParamField>
+
+<ParamField body="combustibleFinalGalones" type="number" required>
+  Final fuel amount in gallons. Must be >= 0.
+</ParamField>
+
+<ParamField body="incidencias" type="string">
+  Description of any incidents that occurred during the mission.
+</ParamField>
+
+### Response
+
+<ResponseField name="success" type="boolean">
+  Indicates if the request was successful.
+</ResponseField>
+
+<ResponseField name="message" type="string">
+  Response message: "Misión finalizada exitosamente"
+</ResponseField>
+
+<ResponseField name="data" type="object">
+  The completed mission object with calculated distance traveled and fuel consumed.
+</ResponseField>
+
+### Validations
+
+- Mission must be in `EN_EJECUCION`, `EN_RUTA_RECOGIDA`, `EN_RUTA_REGRESO`, or `EN_ESPERA` state
+- Final mileage cannot be less than initial mileage
+- Automatically calculates:
+  - `KilometrajeRecorrido` = final mileage - initial mileage
+  - `CombustibleConsumidoGalones` = initial fuel - final fuel
+- If all missions for the parent request are `COMPLETADA`, changes request to `COMPLETADA`
+
+<RequestExample>
+```bash cURL
+curl -X POST "https://api.example.com/mision/1/finalizar" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "kilometrajeFin": 45450,
+    "combustibleFinalGalones": 8.0,
+    "incidencias": "Sin novedad"
+  }'
+```
+</RequestExample>
+
+<ResponseExample>
+```json 200 - Success
+{
+  "success": true,
+  "message": "Misión finalizada exitosamente",
+  "data": {
+    "idMision": 1,
+    "idSolicitud": 1,
+    "idVehiculoAsignado": 1,
+    "idMotoristaAsignado": 5,
+    "descripcion": "Traslado de personal al aeropuerto",
+    "fechaProgramada": "2025-06-15",
+    "kilometrajeInicio": 45230,
+    "kilometrajeFin": 45450,
+    "kilometrajeRecorrido": 220,
+    "combustibleInicialGalones": 12.5,
+    "combustibleFinalGalones": 8.0,
+    "combustibleConsumidoGalones": 4.5,
+    "incidencias": "Sin novedad",
+    "idEstadoMision": 5,
+    "codigoEstado": "COMPLETADA",
+    "fechaHoraInicio": "2025-06-15 08:05:30",
+    "fechaHoraFin": "2025-06-15 09:45:20"
+  }
+}
+```
+
+```json 404 - Mission Not Found
+{
+  "success": false,
+  "message": "Misión no encontrada"
+}
+```
+
+```json 409 - Invalid State
+{
+  "success": false,
+  "message": "La misión debe estar en ejecución para finalizarse"
+}
+```
+
+```json 422 - Invalid Mileage
+{
+  "success": false,
+  "message": "El kilometraje final no puede ser menor al inicial (45230)"
+}
+```
+</ResponseExample>

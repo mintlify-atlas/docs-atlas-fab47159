@@ -1,0 +1,223 @@
+---
+title: 'List Drivers'
+api: 'GET /motorista'
+description: 'Retrieve drivers with pagination and filtering options'
+---
+
+## Paginated Driver List
+
+Retrieves a paginated list of active drivers with support for multiple filters.
+
+### Endpoint
+
+```
+GET /motorista
+```
+
+### Query Parameters
+
+<ParamField query="pagina" type="integer" default="1">
+  Page number (minimum: 1)
+</ParamField>
+
+<ParamField query="por_pagina" type="integer" default="10">
+  Records per page (minimum: 1, maximum: 100)
+</ParamField>
+
+<ParamField query="nombre" type="string">
+  Filter by full name (partial match)
+</ParamField>
+
+<ParamField query="dui" type="string">
+  Filter by DUI number (partial match)
+</ParamField>
+
+<ParamField query="idDepartamento" type="integer">
+  Filter by department ID (exact match)
+</ParamField>
+
+<ParamField query="idDisponibilidad" type="integer">
+  Filter by availability status ID (exact match)
+</ParamField>
+
+<ParamField query="busqueda" type="string">
+  General search across name, DUI, email, and phone number
+</ParamField>
+
+### Response
+
+<ResponseField name="success" type="boolean">
+  Indicates if the operation was successful
+</ResponseField>
+
+<ResponseField name="message" type="string">
+  Success or error message
+</ResponseField>
+
+<ResponseField name="data" type="object">
+  Pagination information and driver records
+  
+  <Expandable title="data properties">
+    <ResponseField name="registros" type="array">
+      Array of driver objects with profile and detail information
+    </ResponseField>
+    
+    <ResponseField name="pagina" type="integer">
+      Current page number
+    </ResponseField>
+    
+    <ResponseField name="porPagina" type="integer">
+      Records per page
+    </ResponseField>
+    
+    <ResponseField name="total" type="integer">
+      Total number of records matching the filter
+    </ResponseField>
+    
+    <ResponseField name="totalPaginas" type="integer">
+      Total number of pages
+    </ResponseField>
+  </Expandable>
+</ResponseField>
+
+### Example Request
+
+```bash
+GET /motorista?pagina=1&por_pagina=10&idDepartamento=1&busqueda=MARTINEZ
+```
+
+### Example Response
+
+```json
+{
+  "success": true,
+  "message": "Listado de motoristas obtenido exitosamente",
+  "data": {
+    "registros": [
+      {
+        "idPerfil": 123,
+        "nombreCompleto": "JUAN CARLOS MARTINEZ LOPEZ",
+        "email": "motorista@ejemplo.com",
+        "telefono": "7777-8888",
+        "dui": "12345678-9",
+        "departamento": "San Salvador",
+        "disponibilidad": "Disponible",
+        "numeroLicencia": "A-12345",
+        "vencimientoLicencia": "2026-12-31"
+      }
+    ],
+    "pagina": 1,
+    "porPagina": 10,
+    "total": 1,
+    "totalPaginas": 1
+  }
+}
+```
+
+### Status Codes
+
+- `200`: List retrieved successfully
+- `500`: Internal server error
+
+---
+
+## Complete Driver List (Non-Paginated)
+
+Retrieves all active drivers without pagination. Useful for populating dropdowns and select components.
+
+### Endpoint
+
+```
+GET /motorista/todos/lista
+```
+
+### Query Parameters
+
+<ParamField query="nombre" type="string">
+  Filter by full name (partial match)
+</ParamField>
+
+<ParamField query="dui" type="string">
+  Filter by DUI number (partial match)
+</ParamField>
+
+<ParamField query="idDepartamento" type="integer">
+  Filter by department ID (exact match)
+</ParamField>
+
+<ParamField query="idDisponibilidad" type="integer">
+  Filter by availability status ID (exact match)
+</ParamField>
+
+<ParamField query="busqueda" type="string">
+  General search across multiple fields
+</ParamField>
+
+### Response
+
+<ResponseField name="success" type="boolean">
+  Indicates if the operation was successful
+</ResponseField>
+
+<ResponseField name="message" type="string">
+  Success or error message
+</ResponseField>
+
+<ResponseField name="data" type="array">
+  Array of all active driver records matching the filters
+</ResponseField>
+
+### Example Request
+
+```bash
+GET /motorista/todos/lista?idDisponibilidad=1
+```
+
+### Example Response
+
+```json
+{
+  "success": true,
+  "message": "Listado completo de motoristas obtenido exitosamente",
+  "data": [
+    {
+      "idPerfil": 123,
+      "nombreCompleto": "JUAN CARLOS MARTINEZ LOPEZ",
+      "dui": "12345678-9",
+      "disponibilidad": "Disponible"
+    },
+    {
+      "idPerfil": 124,
+      "nombreCompleto": "MARIA ELENA RODRIGUEZ GARCIA",
+      "dui": "98765432-1",
+      "disponibilidad": "Disponible"
+    }
+  ]
+}
+```
+
+### Status Codes
+
+- `200`: List retrieved successfully
+- `500`: Internal server error
+
+## Filter Combinations
+
+You can combine multiple filters to narrow down results:
+
+```bash
+# By department and availability
+GET /motorista?idDepartamento=1&idDisponibilidad=2
+
+# By name and DUI
+GET /motorista?nombre=MARTINEZ&dui=12345
+
+# General search with pagination
+GET /motorista?busqueda=7777&pagina=1&por_pagina=20
+```
+
+## Use Cases
+
+- **Paginated endpoint**: Use for main driver listing pages with navigation
+- **Complete list endpoint**: Use for dropdown menus, autocomplete fields, and multi-select components
+- **Filters**: Apply specific filters to find drivers by department, availability, or search terms

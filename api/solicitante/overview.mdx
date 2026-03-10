@@ -1,0 +1,143 @@
+---
+title: 'Solicitante API'
+description: 'Transportation requester management for internal and external users'
+icon: 'user-tie'
+---
+
+## Overview
+
+The Solicitante API manages transportation requesters, supporting both internal employees and external users. It includes DUI validation through external API integration.
+
+## Endpoints
+
+### Register Internal Requester
+
+**POST** `/solicitante/interno`
+
+Registers an existing employee as a transportation requester by adding the SOLICITANTE role.
+
+**Validations:**
+- Profile must exist
+- Cannot already have SOLICITANTE role
+
+---
+
+### Create External Requester (Manual)
+
+**POST** `/solicitante/externo`
+
+Creates an external requester with manually entered data.
+
+**Creates:**
+- Phantom user (no email, inactive)
+- Profile record
+- PerfilRol with SOLICITANTE role
+
+**Validations:**
+- **dui**: Required, unique, format 12345678-9
+- **email**: Optional, unique if provided
+
+---
+
+### Create External Requester (from DUI)
+
+**POST** `/solicitante/externo/crear-por-dui`
+
+Creates an external requester by fetching name and address data from external DUI API.
+
+**Required Fields:**
+- DUI
+- Phone
+- Email (optional)
+- Observations (optional)
+
+**Auto-populated from API:**
+- Names
+- Last names
+- Address
+
+---
+
+### List All Requesters (Unpaginated)
+
+**GET** `/solicitante/todos/lista`
+
+Retrieves all active requesters without pagination. Useful for dropdowns.
+
+**Query Parameters:**
+- `nombre` (string, optional): Filter by full name
+- `dui` (string, optional): Filter by DUI
+- `tipo` (string, optional): Filter by type (INTERNO or EXTERNO)
+- `busqueda` (string, optional): General search
+
+---
+
+### List Requesters (Paginated)
+
+**GET** `/solicitante/`
+
+Retrieves requesters with pagination and filtering.
+
+**Query Parameters:**
+- `pagina` (integer, default: 1): Page number
+- `por_pagina` (integer, default: 10, max: 100): Records per page
+- `nombre` (string, optional): Partial search in full name
+- `dui` (string, optional): Partial search in DUI
+- `tipo` (string, optional): INTERNO or EXTERNO
+- `busqueda` (string, optional): Search across name, DUI, email, and phone
+
+---
+
+### Get Requester by ID
+
+**GET** `/solicitante/{id_perfil}`
+
+Retrieves a specific requester with all profile data.
+
+**Path Parameters:**
+- `id_perfil` (integer, required): The profile ID
+
+---
+
+### Update Requester
+
+**PUT** `/solicitante/{id_perfil}`
+
+Updates requester profile data.
+
+**Path Parameters:**
+- `id_perfil` (integer, required): The profile ID
+
+**Validations:**
+- Requester must exist
+- DUI uniqueness validated on changes
+- Email uniqueness validated on changes
+
+---
+
+### Delete Requester
+
+**DELETE** `/solicitante/{id_perfil}`
+
+Performs logical deletion of a requester.
+
+**Path Parameters:**
+- `id_perfil` (integer, required): The profile ID
+
+**Deletes:**
+- PerfilRol record
+- Profile record
+- User record (if external/phantom user)
+
+**Note:** No physical deletion occurs; records are marked as deleted.
+
+---
+
+## Response Codes
+
+- **200**: Success
+- **201**: Created
+- **404**: Not found
+- **409**: Conflict (duplicate DUI or email)
+- **500**: Internal server error
+- **502/503**: External API unavailable (DUI validation)

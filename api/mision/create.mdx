@@ -1,0 +1,190 @@
+---
+title: 'Create Mission'
+api: 'POST /mision'
+description: 'Create a new mission for an approved request'
+---
+
+## Create Mission
+
+Creates a new mission associated with an approved request. The mission is created in `PROGRAMADA` (scheduled) state.
+
+### Request Body
+
+<ParamField body="idSolicitud" type="integer" required>
+  ID of the associated request. The request must exist and be in `APROBADA` or `EN_PROCESO` state.
+</ParamField>
+
+<ParamField body="fechaProgramada" type="date" required>
+  Scheduled date for the mission in `YYYY-MM-DD` format.
+</ParamField>
+
+<ParamField body="horaSalidaProgramada" type="string" required>
+  Scheduled departure time in `HH:MM:SS` or `HH:MM` format.
+</ParamField>
+
+<ParamField body="idLugarOrigen" type="integer">
+  ID of the origin location. Must exist if provided.
+</ParamField>
+
+<ParamField body="idLugarDestino" type="integer">
+  ID of the main destination location. Must exist if provided.
+</ParamField>
+
+<ParamField body="descripcion" type="string">
+  Description of the mission. Maximum 500 characters.
+</ParamField>
+
+<ParamField body="horaLlegadaEstimada" type="string">
+  Estimated arrival time in `HH:MM:SS` or `HH:MM` format.
+</ParamField>
+
+<ParamField body="observaciones" type="string">
+  General observations about the mission.
+</ParamField>
+
+<ParamField body="paradas" type="array">
+  List of stops for the mission.
+  
+  <Expandable title="Stop Object">
+    <ParamField body="idLugarDestino" type="integer" required>
+      ID of the destination location for this stop.
+    </ParamField>
+    
+    <ParamField body="numeroParada" type="integer" required>
+      Stop order number (must be >= 1).
+    </ParamField>
+    
+    <ParamField body="descripcion" type="string">
+      Description of the stop. Maximum 500 characters.
+    </ParamField>
+    
+    <ParamField body="esParadaFinal" type="boolean" required>
+      Whether this is the final stop of the mission.
+    </ParamField>
+    
+    <ParamField body="fechaHoraLlegadaEstimada" type="string">
+      Estimated arrival date and time in `YYYY-MM-DD HH:MM:SS` format.
+    </ParamField>
+  </Expandable>
+</ParamField>
+
+### Response
+
+<ResponseField name="success" type="boolean">
+  Indicates if the request was successful.
+</ResponseField>
+
+<ResponseField name="message" type="string">
+  Response message: "Misión creada exitosamente"
+</ResponseField>
+
+<ResponseField name="data" type="object">
+  The created mission object with all details including stops.
+</ResponseField>
+
+### Validations
+
+- **idSolicitud**: Required and must exist in `APROBADA` or `EN_PROCESO` state
+- **fechaProgramada**: Required
+- **horaSalidaProgramada**: Required
+- Optional locations must exist if provided
+- Initial state is always `PROGRAMADA`
+
+<RequestExample>
+```bash cURL
+curl -X POST "https://api.example.com/mision" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "idSolicitud": 1,
+    "idLugarOrigen": 1,
+    "idLugarDestino": 2,
+    "descripcion": "Traslado de personal al aeropuerto",
+    "fechaProgramada": "2025-06-15",
+    "horaSalidaProgramada": "08:00:00",
+    "horaLlegadaEstimada": "09:30:00",
+    "observaciones": "Llevar documentos",
+    "paradas": []
+  }'
+```
+
+```bash Multi-Stop Mission
+curl -X POST "https://api.example.com/mision" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "idSolicitud": 1,
+    "idLugarOrigen": 1,
+    "idLugarDestino": 5,
+    "descripcion": "Ruta de entrega con múltiples paradas",
+    "fechaProgramada": "2025-06-15",
+    "horaSalidaProgramada": "08:00:00",
+    "horaLlegadaEstimada": "14:00:00",
+    "paradas": [
+      {
+        "idLugarDestino": 2,
+        "numeroParada": 1,
+        "descripcion": "Entrega en sucursal norte",
+        "esParadaFinal": false,
+        "fechaHoraLlegadaEstimada": "2025-06-15 09:30:00"
+      },
+      {
+        "idLugarDestino": 3,
+        "numeroParada": 2,
+        "descripcion": "Entrega en sucursal centro",
+        "esParadaFinal": false,
+        "fechaHoraLlegadaEstimada": "2025-06-15 11:00:00"
+      },
+      {
+        "idLugarDestino": 5,
+        "numeroParada": 3,
+        "descripcion": "Retorno a oficina principal",
+        "esParadaFinal": true,
+        "fechaHoraLlegadaEstimada": "2025-06-15 14:00:00"
+      }
+    ]
+  }'
+```
+</RequestExample>
+
+<ResponseExample>
+```json 201 - Created
+{
+  "success": true,
+  "message": "Misión creada exitosamente",
+  "data": {
+    "idMision": 1,
+    "idSolicitud": 1,
+    "idLugarOrigen": 1,
+    "idLugarDestino": 2,
+    "descripcion": "Traslado de personal al aeropuerto",
+    "fechaProgramada": "2025-06-15",
+    "horaSalidaProgramada": "08:00:00",
+    "horaLlegadaEstimada": "09:30:00",
+    "observaciones": "Llevar documentos",
+    "idEstadoMision": 1,
+    "codigoEstado": "PROGRAMADA",
+    "paradas": []
+  }
+}
+```
+
+```json 404 - Request Not Found
+{
+  "success": false,
+  "message": "Solicitud no encontrada"
+}
+```
+
+```json 409 - Invalid Request State
+{
+  "success": false,
+  "message": "La solicitud debe estar en estado APROBADA o EN_PROCESO"
+}
+```
+
+```json 422 - Validation Error
+{
+  "success": false,
+  "message": "El lugar de origen no existe"
+}
+```
+</ResponseExample>

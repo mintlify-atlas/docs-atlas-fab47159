@@ -1,0 +1,112 @@
+---
+title: 'Vehicles Overview'
+description: 'Complete API reference for managing vehicles in the system'
+---
+
+## Overview
+
+The Vehicles API provides endpoints for complete CRUD operations on vehicle records, including integration with an external license plate API for automated data retrieval.
+
+## Key Features
+
+- **Complete CRUD Operations**: Create, read, update, and delete vehicle records
+- **External API Integration**: Automatically populate vehicle data from external license plate API
+- **Advanced Filtering**: Filter vehicles by plate, brand, model, class, and state
+- **Pagination Support**: Efficient data retrieval with paginated responses
+- **Soft Delete**: Logical deletion preserves data integrity
+
+## Available Endpoints
+
+<CardGroup cols={2}>
+  <Card title="Create Vehicle" icon="plus" href="/api/vehiculo/create">
+    Create a new vehicle with complete data
+  </Card>
+  
+  <Card title="Create by Plate" icon="car" href="/api/vehiculo/create-by-plate">
+    Create vehicle using external plate API
+  </Card>
+  
+  <Card title="Query Plate" icon="magnifying-glass" href="/api/vehiculo/query-plate">
+    Query external plate API for vehicle information
+  </Card>
+  
+  <Card title="List Vehicles" icon="list" href="/api/vehiculo/list">
+    List vehicles with pagination and filters
+  </Card>
+  
+  <Card title="Get Vehicle" icon="eye" href="/api/vehiculo/get">
+    Get a specific vehicle by ID
+  </Card>
+  
+  <Card title="Update Vehicle" icon="pen" href="/api/vehiculo/update">
+    Update an existing vehicle
+  </Card>
+  
+  <Card title="Delete Vehicle" icon="trash" href="/api/vehiculo/delete">
+    Delete a vehicle (soft delete)
+  </Card>
+</CardGroup>
+
+## Common Validations
+
+<AccordionGroup>
+  <Accordion title="License Plate">
+    - Required field
+    - Must be unique across all active vehicles
+    - Automatically converted to uppercase
+    - Spaces are removed
+    - If a deleted vehicle with the same plate exists, it will be reactivated
+  </Accordion>
+  
+  <Accordion title="Vehicle Class">
+    - Required field
+    - Must exist in the system catalog
+    - Must be active
+  </Accordion>
+  
+  <Accordion title="Vehicle State">
+    - Required field
+    - Must exist in the system catalog
+    - Must be active
+  </Accordion>
+  
+  <Accordion title="Foreign Keys">
+    - Optional fields (Fuel Type, Default Driver, Assigned Department)
+    - If provided, they must exist in their respective catalogs
+    - Must be active
+  </Accordion>
+</AccordionGroup>
+
+## External API Integration
+
+The system integrates with an external license plate API to automatically retrieve vehicle information:
+
+1. **Authentication**: The system authenticates with the external API
+2. **Data Retrieval**: Vehicle data is fetched by license plate
+3. **Owner Verification**: Verifies the owner belongs to the institution (configurable via `PLACA_API_PROPIETARIO_FILTRO`)
+4. **Auto-mapping**: Automatically finds vehicle class in the catalog
+5. **Data Population**: Auto-fills brand, model, year, color, engine, chassis, VIN, circulation card date, and insurance policy
+
+## Response Format
+
+All endpoints return responses in the following format:
+
+```json
+{
+  "success": true,
+  "message": "Operation completed successfully",
+  "data": { /* ... */ },
+  "timestamp": "2024-01-15T10:30:00Z"
+}
+```
+
+## Error Handling
+
+| Status Code | Description |
+|------------|-------------|
+| 400 | Bad Request - Invalid input data |
+| 403 | Forbidden - Owner doesn't belong to institution |
+| 404 | Not Found - Resource doesn't exist |
+| 409 | Conflict - Duplicate plate or active missions |
+| 500 | Internal Server Error |
+| 502/503/504 | External API errors |

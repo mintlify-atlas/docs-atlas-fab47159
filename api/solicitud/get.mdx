@@ -1,0 +1,386 @@
+---
+title: "Get Solicitud"
+api: "GET /solicitud/{id}"
+description: "Retrieve a specific solicitud by ID"
+---
+
+## Overview
+
+Retrieves detailed information about a specific solicitud, including its current status, associated locations, and linked missions.
+
+## Authentication
+
+Requires valid authentication token.
+
+## Path Parameters
+
+<ParamField path="id_solicitud" type="integer" required>
+  The unique ID of the solicitud to retrieve
+</ParamField>
+
+## Response
+
+<ResponseField name="success" type="boolean">
+  Indicates if the operation was successful
+</ResponseField>
+
+<ResponseField name="message" type="string">
+  Success message
+</ResponseField>
+
+<ResponseField name="data" type="object">
+  The solicitud object with complete details
+  
+  <Expandable title="Solicitud Object Properties">
+    <ResponseField name="Id" type="integer">
+      Unique solicitud ID
+    </ResponseField>
+    
+    <ResponseField name="CodigoSolicitud" type="string">
+      Solicitud code (e.g., SOL-2026-03-00000042)
+    </ResponseField>
+    
+    <ResponseField name="IdUsuarioSolicitante" type="integer">
+      Requester profile ID
+    </ResponseField>
+    
+    <ResponseField name="NombreSolicitante" type="string">
+      Requester full name
+    </ResponseField>
+    
+    <ResponseField name="EmailSolicitante" type="string">
+      Requester email
+    </ResponseField>
+    
+    <ResponseField name="IdDepartamentoSolicitante" type="integer">
+      Requesting department ID
+    </ResponseField>
+    
+    <ResponseField name="NombreDepartamento" type="string">
+      Department name
+    </ResponseField>
+    
+    <ResponseField name="IdUsuarioAprobador" type="integer">
+      Approver profile ID
+    </ResponseField>
+    
+    <ResponseField name="NombreAprobador" type="string">
+      Approver full name
+    </ResponseField>
+    
+    <ResponseField name="EmailAprobador" type="string">
+      Approver email
+    </ResponseField>
+    
+    <ResponseField name="IdTipoPrioridadSolicitud" type="integer">
+      Priority type ID
+    </ResponseField>
+    
+    <ResponseField name="NombrePrioridad" type="string">
+      Priority name
+    </ResponseField>
+    
+    <ResponseField name="IdTipoServicioSolicitud" type="integer">
+      Service type ID
+    </ResponseField>
+    
+    <ResponseField name="NombreTipoServicio" type="string">
+      Service type name
+    </ResponseField>
+    
+    <ResponseField name="Asunto" type="string">
+      Subject
+    </ResponseField>
+    
+    <ResponseField name="Descripcion" type="string">
+      Detailed description
+    </ResponseField>
+    
+    <ResponseField name="Justificacion" type="string">
+      Justification
+    </ResponseField>
+    
+    <ResponseField name="CantidadPasajeros" type="integer">
+      Number of passengers
+    </ResponseField>
+    
+    <ResponseField name="NombresPasajeros" type="string">
+      Passenger names
+    </ResponseField>
+    
+    <ResponseField name="FechaServicioRequerido" type="date">
+      Required service date
+    </ResponseField>
+    
+    <ResponseField name="HoraServicioRequerido" type="time">
+      Required service time
+    </ResponseField>
+    
+    <ResponseField name="Observaciones" type="string">
+      Additional observations
+    </ResponseField>
+    
+    <ResponseField name="IdEstadoActual" type="integer">
+      Current status ID
+    </ResponseField>
+    
+    <ResponseField name="CodigoEstadoActual" type="string">
+      Current status code
+    </ResponseField>
+    
+    <ResponseField name="NombreEstadoActual" type="string">
+      Current status name
+    </ResponseField>
+    
+    <ResponseField name="ColorEstadoActual" type="string">
+      Status color (hex code)
+    </ResponseField>
+    
+    <ResponseField name="EsEstadoFinal" type="boolean">
+      Whether the current status is final
+    </ResponseField>
+    
+    <ResponseField name="FechaHoraCreacion" type="datetime">
+      Creation timestamp
+    </ResponseField>
+    
+    <ResponseField name="FechaHoraActualizacion" type="datetime">
+      Last update timestamp
+    </ResponseField>
+    
+    <ResponseField name="lugares" type="array">
+      Array of location objects
+      
+      <Expandable title="Location Object">
+        <ResponseField name="Id" type="integer">
+          Location detail ID
+        </ResponseField>
+        <ResponseField name="IdLugar" type="integer">
+          Location ID (FK to Lugares)
+        </ResponseField>
+        <ResponseField name="NombreLugar" type="string">
+          Location name
+        </ResponseField>
+        <ResponseField name="DireccionLugar" type="string">
+          Location address
+        </ResponseField>
+        <ResponseField name="CodigoLugar" type="string">
+          Location code
+        </ResponseField>
+        <ResponseField name="Latitud" type="decimal">
+          Latitude coordinate
+        </ResponseField>
+        <ResponseField name="Longitud" type="decimal">
+          Longitude coordinate
+        </ResponseField>
+        <ResponseField name="EsOrigen" type="boolean">
+          Whether this is the origin location
+        </ResponseField>
+        <ResponseField name="Orden" type="integer">
+          Stop order
+        </ResponseField>
+        <ResponseField name="Descripcion" type="string">
+          Description of activities at this location
+        </ResponseField>
+        <ResponseField name="HoraEstimadaLlegada" type="time">
+          Estimated arrival time
+        </ResponseField>
+        <ResponseField name="RequiereRetorno" type="boolean">
+          Whether return trip is required
+        </ResponseField>
+        <ResponseField name="HoraEstimadaRetorno" type="time">
+          Estimated return time
+        </ResponseField>
+      </Expandable>
+    </ResponseField>
+    
+    <ResponseField name="misiones" type="array">
+      Array of associated mission objects
+      
+      <Expandable title="Mission Object">
+        <ResponseField name="Id" type="integer">
+          Mission ID
+        </ResponseField>
+        <ResponseField name="NumeroMision" type="string">
+          Mission number
+        </ResponseField>
+        <ResponseField name="Descripcion" type="string">
+          Mission description
+        </ResponseField>
+        <ResponseField name="IdLugarOrigen" type="integer">
+          Origin location ID
+        </ResponseField>
+        <ResponseField name="NombreLugarOrigen" type="string">
+          Origin location name
+        </ResponseField>
+        <ResponseField name="IdLugarDestino" type="integer">
+          Destination location ID
+        </ResponseField>
+        <ResponseField name="NombreLugarDestino" type="string">
+          Destination location name
+        </ResponseField>
+        <ResponseField name="FechaProgramada" type="date">
+          Scheduled date
+        </ResponseField>
+        <ResponseField name="HoraSalidaProgramada" type="time">
+          Scheduled departure time
+        </ResponseField>
+        <ResponseField name="HoraLlegadaEstimada" type="time">
+          Estimated arrival time
+        </ResponseField>
+        <ResponseField name="IdEstadoMision" type="integer">
+          Mission status ID
+        </ResponseField>
+        <ResponseField name="CodigoEstadoMision" type="string">
+          Mission status code
+        </ResponseField>
+        <ResponseField name="Observaciones" type="string">
+          Mission observations
+        </ResponseField>
+      </Expandable>
+    </ResponseField>
+  </Expandable>
+</ResponseField>
+
+## Status Codes
+
+<ResponseField name="200" type="OK">
+  Solicitud retrieved successfully
+</ResponseField>
+
+<ResponseField name="404" type="Not Found">
+  Solicitud with the specified ID does not exist or has been deleted
+</ResponseField>
+
+<ResponseField name="500" type="Internal Server Error">
+  Server error
+</ResponseField>
+
+<RequestExample>
+
+```bash cURL
+curl -X GET https://api.example.com/solicitud/42 \
+  -H "Authorization: Bearer YOUR_TOKEN"
+```
+
+```python Python
+import requests
+
+url = "https://api.example.com/solicitud/42"
+headers = {"Authorization": "Bearer YOUR_TOKEN"}
+
+response = requests.get(url, headers=headers)
+print(response.json())
+```
+
+```javascript JavaScript
+const response = await fetch('https://api.example.com/solicitud/42', {
+  headers: {
+    'Authorization': 'Bearer YOUR_TOKEN'
+  }
+});
+
+const data = await response.json();
+console.log(data);
+```
+
+</RequestExample>
+
+<ResponseExample>
+
+```json Success Response (200)
+{
+  "success": true,
+  "message": "Solicitud obtenida exitosamente",
+  "data": {
+    "Id": 42,
+    "CodigoSolicitud": "SOL-2026-03-00000042",
+    "IdUsuarioSolicitante": 1,
+    "NombreSolicitante": "Juan Pérez",
+    "EmailSolicitante": "juan.perez@example.com",
+    "IdDepartamentoSolicitante": 2,
+    "NombreDepartamento": "Logística",
+    "IdUsuarioAprobador": 3,
+    "NombreAprobador": "María González",
+    "EmailAprobador": "maria.gonzalez@example.com",
+    "IdTipoPrioridadSolicitud": 2,
+    "NombrePrioridad": "Normal",
+    "IdTipoServicioSolicitud": 1,
+    "NombreTipoServicio": "Transporte de personal",
+    "Asunto": "Transporte de personal a sede central",
+    "Descripcion": "Se requiere transporte para personal de la unidad",
+    "Justificacion": "Reunión de coordinación institucional",
+    "CantidadPasajeros": 5,
+    "NombresPasajeros": "Juan Pérez, María López, Carlos Rivas",
+    "FechaServicioRequerido": "2026-04-15",
+    "HoraServicioRequerido": "08:00:00",
+    "Observaciones": "Llevar a las 8am y regresar a las 5pm",
+    "IdEstadoActual": 2,
+    "CodigoEstadoActual": "APROBADA",
+    "NombreEstadoActual": "Aprobada",
+    "ColorEstadoActual": "#00FF00",
+    "EsEstadoFinal": false,
+    "FechaHoraCreacion": "2026-03-10T14:30:00",
+    "FechaHoraActualizacion": "2026-03-10T15:45:00",
+    "lugares": [
+      {
+        "Id": 1,
+        "IdLugar": 5,
+        "NombreLugar": "Sede Central",
+        "DireccionLugar": "Av. Principal 123",
+        "CodigoLugar": "SC-001",
+        "Latitud": 13.6929,
+        "Longitud": -89.2182,
+        "EsOrigen": true,
+        "Orden": 0,
+        "Descripcion": "Sede central - Salida",
+        "HoraEstimadaLlegada": null,
+        "RequiereRetorno": false,
+        "HoraEstimadaRetorno": null
+      },
+      {
+        "Id": 2,
+        "IdLugar": 12,
+        "NombreLugar": "Oficina Regional Norte",
+        "DireccionLugar": "Calle Norte 456",
+        "CodigoLugar": "ORN-001",
+        "Latitud": 13.7042,
+        "Longitud": -89.2245,
+        "EsOrigen": false,
+        "Orden": 1,
+        "Descripcion": "Primer destino",
+        "HoraEstimadaLlegada": "10:30:00",
+        "RequiereRetorno": true,
+        "HoraEstimadaRetorno": "12:00:00"
+      }
+    ],
+    "misiones": [
+      {
+        "Id": 15,
+        "NumeroMision": "MIS-2026-03-00000015",
+        "Descripcion": "Transporte de ida",
+        "IdLugarOrigen": 5,
+        "NombreLugarOrigen": "Sede Central",
+        "IdLugarDestino": 12,
+        "NombreLugarDestino": "Oficina Regional Norte",
+        "FechaProgramada": "2026-04-15",
+        "HoraSalidaProgramada": "08:00:00",
+        "HoraLlegadaEstimada": "10:30:00",
+        "IdEstadoMision": 1,
+        "CodigoEstadoMision": "ASIGNADA",
+        "Observaciones": null
+      }
+    ]
+  }
+}
+```
+
+```json Error Response (404)
+{
+  "success": false,
+  "message": "Solicitud con Id 999 no encontrada",
+  "data": null
+}
+```
+
+</ResponseExample>

@@ -1,0 +1,193 @@
+---
+title: 'Delete Driver'
+api: 'DELETE /motorista/{id}'
+description: 'Soft delete a driver record and associated data'
+---
+
+Performs a logical deletion of a driver record. This operation marks the driver and all associated records as deleted without physically removing them from the database.
+
+## Endpoint
+
+```
+DELETE /motorista/{id_perfil}
+```
+
+## Path Parameters
+
+<ParamField path="id_perfil" type="integer" required>
+  The unique profile ID of the driver to delete
+</ParamField>
+
+## Soft Deletion Behavior
+
+When a driver is deleted, the following records are marked as deleted:
+
+1. **DetallePerfilMotorista** - Driver-specific details (license, department, etc.)
+2. **PerfilRol** - Profile role assignment (MOTORISTA role)
+3. **Perfil** - User profile record
+4. **Usuario** - User account
+
+**Important**: No records are physically removed from the database. All data is preserved for historical and audit purposes.
+
+## Response
+
+<ResponseField name="success" type="boolean">
+  Indicates if the operation was successful
+</ResponseField>
+
+<ResponseField name="message" type="string">
+  Success or error message
+</ResponseField>
+
+<ResponseField name="data" type="object">
+  Information about the deleted driver
+  
+  <Expandable title="data properties">
+    <ResponseField name="idPerfil" type="integer">
+      Profile ID of the deleted driver
+    </ResponseField>
+    
+    <ResponseField name="nombreCompleto" type="string">
+      Full name of the deleted driver
+    </ResponseField>
+    
+    <ResponseField name="eliminado" type="boolean">
+      Confirmation of deletion status (always true)
+    </ResponseField>
+  </Expandable>
+</ResponseField>
+
+## Example Request
+
+```bash
+DELETE /motorista/123
+```
+
+## Example Response
+
+```json
+{
+  "success": true,
+  "message": "Motorista eliminado exitosamente",
+  "data": {
+    "idPerfil": 123,
+    "nombreCompleto": "JUAN CARLOS MARTINEZ LOPEZ",
+    "eliminado": true
+  }
+}
+```
+
+## Validations
+
+The endpoint performs the following validations before deletion:
+
+### Driver Must Exist
+
+The driver must exist in the system and be currently active (not already deleted).
+
+```json
+{
+  "success": false,
+  "message": "Motorista no encontrado o ya ha sido eliminado",
+  "data": null
+}
+```
+
+### No Active Missions
+
+The driver must not have any active missions assigned. Drivers with active missions cannot be deleted to maintain data integrity.
+
+```json
+{
+  "success": false,
+  "message": "No se puede eliminar el motorista porque tiene misiones activas asignadas",
+  "data": null
+}
+```
+
+## Status Codes
+
+- `200`: Driver deleted successfully
+- `404`: Driver not found or already deleted
+- `409`: Conflict - driver has active missions
+- `500`: Internal server error
+
+## Error Response Examples
+
+### Driver Not Found
+
+```json
+{
+  "success": false,
+  "message": "Motorista no encontrado o ya ha sido eliminado",
+  "data": null
+}
+```
+
+### Active Missions Conflict
+
+```json
+{
+  "success": false,
+  "message": "No se puede eliminar el motorista porque tiene misiones activas asignadas. Debe completar o reasignar las misiones antes de eliminar el motorista.",
+  "data": null
+}
+```
+
+### Internal Server Error
+
+```json
+{
+  "success": false,
+  "message": "Error interno al eliminar el motorista",
+  "data": null
+}
+```
+
+## Important Considerations
+
+### Data Recovery
+
+Since deletion is logical, deleted driver records can potentially be recovered by database administrators if needed. The deleted records remain in the database with a deletion flag.
+
+### Related Records
+
+All related records are also marked as deleted:
+- The driver cannot log in after deletion (user account deactivated)
+- The driver will not appear in active driver lists
+- Historical mission records remain intact but the driver is marked as deleted
+
+### Before Deleting
+
+Ensure you:
+1. Complete or reassign all active missions
+2. Back up any important driver-specific data
+3. Document the reason for deletion in your application logs
+
+## Workflow Example
+
+```javascript
+// 1. Check if driver has active missions
+const driver = await fetch('/motorista/123');
+
+// 2. If missions exist, complete or reassign them first
+if (driver.hasActiveMissions) {
+  // Complete missions or reassign to another driver
+}
+
+// 3. Delete the driver
+const response = await fetch('/motorista/123', {
+  method: 'DELETE'
+});
+
+if (response.success) {
+  console.log('Driver deleted successfully');
+}
+```
+
+## Use Cases
+
+- Remove drivers who have left the organization
+- Deactivate driver accounts that are no longer needed
+- Clean up test or duplicate driver records
+- Comply with employee offboarding processes

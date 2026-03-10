@@ -1,0 +1,345 @@
+---
+title: 'Update Vehicle'
+api: 'PUT /vehiculo/{id}'
+description: 'Update an existing vehicle'
+---
+
+## Endpoint
+
+<ParamField path="method" type="string" default="PUT">
+  PUT
+</ParamField>
+
+<ParamField path="endpoint" type="string">
+  /vehiculo/{id_vehiculo}
+</ParamField>
+
+## Description
+
+Updates an existing vehicle record. All fields in the request body are optional - only send the fields you want to update. The vehicle must exist and be active.
+
+## Path Parameters
+
+<ParamField path="id_vehiculo" type="integer" required>
+  Unique identifier of the vehicle to update
+  
+  **Example**: `1`
+</ParamField>
+
+## Request Body
+
+<Info>
+  All fields are optional. Only include the fields you want to update.
+</Info>
+
+<ParamField body="placa" type="string">
+  Vehicle license plate. Must be unique if changed. Maximum 20 characters.
+  
+  **Example**: `"P503067"`
+</ParamField>
+
+<ParamField body="idClaseVehiculo" type="integer">
+  ID of the vehicle class. Must exist and be active if changed.
+  
+  **Example**: `1`
+</ParamField>
+
+<ParamField body="idEstadoVehiculo" type="integer">
+  ID of the vehicle state. Must exist and be active if changed.
+  
+  **Example**: `1`
+</ParamField>
+
+<ParamField body="idTipoCombustible" type="integer">
+  ID of the fuel type. Must exist if provided.
+  
+  **Example**: `1`
+</ParamField>
+
+<ParamField body="idMotoristaPorDefecto" type="integer">
+  ID of the default driver profile. Must exist if provided.
+  
+  **Example**: `10`
+</ParamField>
+
+<ParamField body="idDepartamentoAsignado" type="integer">
+  ID of the assigned department. Must exist if provided.
+  
+  **Example**: `2`
+</ParamField>
+
+<ParamField body="marca" type="string">
+  Vehicle brand. Maximum 100 characters.
+  
+  **Example**: `"TOYOTA"`
+</ParamField>
+
+<ParamField body="modelo" type="string">
+  Vehicle model. Maximum 100 characters.
+  
+  **Example**: `"HILUX"`
+</ParamField>
+
+<ParamField body="anio" type="integer">
+  Year of manufacture.
+  
+  **Example**: `2020`
+</ParamField>
+
+<ParamField body="color" type="string">
+  Vehicle color. Maximum 50 characters.
+  
+  **Example**: `"BLANCO"`
+</ParamField>
+
+<ParamField body="numeroMotor" type="string">
+  Engine number. Maximum 100 characters.
+  
+  **Example**: `"1GRFE123456"`
+</ParamField>
+
+<ParamField body="numeroChasis" type="string">
+  Chassis number. Maximum 100 characters.
+  
+  **Example**: `"JT123456789012345"`
+</ParamField>
+
+<ParamField body="numeroVin" type="string">
+  VIN number. Maximum 100 characters.
+  
+  **Example**: `"JT123456789012345"`
+</ParamField>
+
+<ParamField body="capacidadPasajeros" type="integer">
+  Passenger capacity.
+  
+  **Example**: `5`
+</ParamField>
+
+<ParamField body="capacidadCombustibleGalones" type="number">
+  Fuel capacity in gallons.
+  
+  **Example**: `80.0`
+</ParamField>
+
+<ParamField body="kilometrajeActual" type="integer">
+  Current mileage.
+  
+  **Example**: `18000`
+</ParamField>
+
+<ParamField body="fechaUltimaRevision" type="string">
+  Last revision date (YYYY-MM-DD format).
+  
+  **Example**: `"2024-03-15"`
+</ParamField>
+
+<ParamField body="fechaProximoMantenimiento" type="string">
+  Next maintenance date (YYYY-MM-DD format).
+  
+  **Example**: `"2024-09-15"`
+</ParamField>
+
+<ParamField body="fechaTarjetaCirculacion" type="string">
+  Circulation card date (YYYY-MM-DD format).
+  
+  **Example**: `"2023-12-01"`
+</ParamField>
+
+<ParamField body="numeroPolizaSeguro" type="string">
+  Insurance policy number. Maximum 100 characters.
+  
+  **Example**: `"POL123456789"`
+</ParamField>
+
+<ParamField body="fechaVencimientoSeguro" type="string">
+  Insurance expiration date (YYYY-MM-DD format).
+  
+  **Example**: `"2025-12-01"`
+</ParamField>
+
+<ParamField body="observaciones" type="string">
+  Additional observations.
+  
+  **Example**: `"Mantenimiento realizado en marzo 2024"`
+</ParamField>
+
+## Validations
+
+<Warning>
+  **Important Validations**
+  
+  - Vehicle must exist and be active
+  - If changing **placa**, it must be unique (not used by another active vehicle)
+  - Any FK that is changed must exist and be active
+  - **placa** is automatically converted to uppercase without spaces
+</Warning>
+
+## Response
+
+<ResponseField name="success" type="boolean">
+  Indicates if the operation was successful
+</ResponseField>
+
+<ResponseField name="message" type="string">
+  Success message: "Vehículo actualizado exitosamente"
+</ResponseField>
+
+<ResponseField name="data" type="object">
+  The updated vehicle object with all fields and resolved foreign key names
+  
+  <Expandable title="Vehicle Object Properties">
+    <ResponseField name="Id" type="integer">
+      Unique vehicle identifier
+    </ResponseField>
+    
+    <ResponseField name="Placa" type="string">
+      Vehicle license plate (updated)
+    </ResponseField>
+    
+    <ResponseField name="Marca" type="string">
+      Vehicle brand (updated)
+    </ResponseField>
+    
+    <ResponseField name="KilometrajeActual" type="integer">
+      Current mileage (updated)
+    </ResponseField>
+    
+    <ResponseField name="FechaHoraActualizacion" type="string">
+      Last update timestamp (will reflect this update)
+    </ResponseField>
+    
+    <ResponseField name="..." type="various">
+      All other vehicle fields
+    </ResponseField>
+  </Expandable>
+</ResponseField>
+
+<ResponseField name="timestamp" type="string">
+  Response timestamp
+</ResponseField>
+
+## Example Request
+
+```json
+PUT /vehiculo/1
+
+{
+  "kilometrajeActual": 18000,
+  "fechaUltimaRevision": "2024-03-15",
+  "fechaProximoMantenimiento": "2024-09-15",
+  "observaciones": "Mantenimiento realizado en marzo 2024"
+}
+```
+
+## Example Response
+
+```json
+{
+  "success": true,
+  "message": "Vehículo actualizado exitosamente",
+  "data": {
+    "Id": 1,
+    "Placa": "P503067",
+    "Marca": "TOYOTA",
+    "Modelo": "HILUX",
+    "Anio": 2020,
+    "Color": "BLANCO",
+    "NumeroMotor": "1GRFE123456",
+    "NumeroChasis": "JT123456789012345",
+    "NumeroVin": "JT123456789012345",
+    "CapacidadPasajeros": 5,
+    "CapacidadCombustibleGalones": 80.0,
+    "KilometrajeActual": 18000,
+    "FechaUltimaRevision": "2024-03-15",
+    "FechaProximoMantenimiento": "2024-09-15",
+    "FechaTarjetaCirculacion": "2023-12-01",
+    "NumeroPolizaSeguro": "POL123456789",
+    "FechaVencimientoSeguro": "2025-12-01",
+    "Observaciones": "Mantenimiento realizado en marzo 2024",
+    "Eliminado": false,
+    "FechaHoraCreacion": "2024-01-15T10:30:00Z",
+    "FechaHoraActualizacion": "2024-03-15T15:20:00Z",
+    "IdClaseVehiculo": 1,
+    "NombreClaseVehiculo": "Pick-up",
+    "IdEstadoVehiculo": 1,
+    "NombreEstadoVehiculo": "Activo",
+    "IdTipoCombustible": 1,
+    "NombreTipoCombustible": "Diesel",
+    "IdMotoristaPorDefecto": 10,
+    "NombreMotoristaPorDefecto": "Juan Pérez",
+    "IdDepartamentoAsignado": 2,
+    "NombreDepartamentoAsignado": "Logística"
+  },
+  "timestamp": "2024-03-15T15:20:00Z"
+}
+```
+
+## Common Use Cases
+
+<CardGroup cols={2}>
+  <Card title="Update Mileage" icon="gauge">
+    Regularly update vehicle mileage after trips
+  </Card>
+  
+  <Card title="Maintenance Records" icon="wrench">
+    Update maintenance dates and observations
+  </Card>
+  
+  <Card title="Change Status" icon="toggle-on">
+    Update vehicle state (active, maintenance, inactive)
+  </Card>
+  
+  <Card title="Reassign Department" icon="building">
+    Change the assigned department for a vehicle
+  </Card>
+</CardGroup>
+
+## Error Responses
+
+<ResponseExample>
+```json 404 Not Found - Vehicle Not Found
+{
+  "success": false,
+  "message": "No se encontró el vehículo con ID 999",
+  "timestamp": "2024-03-15T15:20:00Z"
+}
+```
+
+```json 409 Conflict - Duplicate Plate
+{
+  "success": false,
+  "message": "Ya existe otro vehículo con la placa P503067",
+  "timestamp": "2024-03-15T15:20:00Z"
+}
+```
+
+```json 400 Bad Request - Invalid FK
+{
+  "success": false,
+  "message": "El estado de vehículo con ID 999 no existe o está inactivo",
+  "timestamp": "2024-03-15T15:20:00Z"
+}
+```
+
+```json 500 Internal Server Error
+{
+  "success": false,
+  "message": "Error interno del servidor",
+  "timestamp": "2024-03-15T15:20:00Z"
+}
+```
+</ResponseExample>
+
+## Partial Update Support
+
+<Info>
+  This endpoint supports partial updates. You can send only the fields you want to change, and all other fields will remain unchanged.
+  
+  For example, to only update the mileage:
+  ```json
+  {
+    "kilometrajeActual": 18000
+  }
+  ```
+</Info>

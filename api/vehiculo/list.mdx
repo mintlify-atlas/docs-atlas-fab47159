@@ -1,0 +1,349 @@
+---
+title: 'List Vehicles'
+api: 'GET /vehiculo'
+description: 'List vehicles with pagination and filters'
+---
+
+## Endpoints
+
+There are two endpoints for listing vehicles:
+
+1. **Paginated List**: `GET /vehiculo` - Returns paginated results
+2. **Complete List**: `GET /vehiculo/todos/lista` - Returns all records without pagination
+
+---
+
+## GET /vehiculo (Paginated)
+
+### Description
+
+Lists active vehicles with pagination and multiple filter options. Ideal for displaying vehicles in a user interface with page navigation.
+
+### Query Parameters
+
+<ParamField query="pagina" type="integer" default="1">
+  Page number (must be ≥ 1)
+  
+  **Example**: `1`
+</ParamField>
+
+<ParamField query="por_pagina" type="integer" default="10">
+  Records per page (must be between 1 and 100)
+  
+  **Example**: `10`
+</ParamField>
+
+<ParamField query="placa" type="string">
+  Filter by license plate (partial match)
+  
+  **Example**: `"P503"`
+</ParamField>
+
+<ParamField query="marca" type="string">
+  Filter by brand (partial match)
+  
+  **Example**: `"TOYOTA"`
+</ParamField>
+
+<ParamField query="modelo" type="string">
+  Filter by model (partial match)
+  
+  **Example**: `"HILUX"`
+</ParamField>
+
+<ParamField query="idClaseVehiculo" type="integer">
+  Filter by vehicle class ID (exact match)
+  
+  **Example**: `1`
+</ParamField>
+
+<ParamField query="idEstadoVehiculo" type="integer">
+  Filter by vehicle state ID (exact match)
+  
+  **Example**: `1`
+</ParamField>
+
+<ParamField query="busqueda" type="string">
+  General search across plate, brand, model, and color
+  
+  **Example**: `"toyota blanco"`
+</ParamField>
+
+### Filter Behavior
+
+<Info>
+  **Search Types**
+  
+  - **Partial Match**: `placa`, `marca`, `modelo`, `busqueda` - These filters search for partial matches (case-insensitive)
+  - **Exact Match**: `idClaseVehiculo`, `idEstadoVehiculo` - These filters require exact ID matches
+  - **General Search**: `busqueda` searches across multiple fields: plate, brand, model, and color
+</Info>
+
+### Response
+
+<ResponseField name="success" type="boolean">
+  Indicates if the operation was successful
+</ResponseField>
+
+<ResponseField name="message" type="string">
+  Success message: "Listado de vehículos obtenido exitosamente"
+</ResponseField>
+
+<ResponseField name="data" type="object">
+  Paginated vehicle data
+  
+  <Expandable title="Pagination Object">
+    <ResponseField name="total" type="integer">
+      Total number of vehicles matching the filters
+    </ResponseField>
+    
+    <ResponseField name="pagina" type="integer">
+      Current page number
+    </ResponseField>
+    
+    <ResponseField name="porPagina" type="integer">
+      Records per page
+    </ResponseField>
+    
+    <ResponseField name="registros" type="array">
+      Array of vehicle objects
+      
+      <Expandable title="Vehicle Object Properties">
+        <ResponseField name="Id" type="integer">
+          Vehicle ID
+        </ResponseField>
+        
+        <ResponseField name="Placa" type="string">
+          License plate
+        </ResponseField>
+        
+        <ResponseField name="Marca" type="string">
+          Brand
+        </ResponseField>
+        
+        <ResponseField name="Modelo" type="string">
+          Model
+        </ResponseField>
+        
+        <ResponseField name="Anio" type="integer">
+          Year
+        </ResponseField>
+        
+        <ResponseField name="Color" type="string">
+          Color
+        </ResponseField>
+        
+        <ResponseField name="IdClaseVehiculo" type="integer">
+          Vehicle class ID
+        </ResponseField>
+        
+        <ResponseField name="NombreClaseVehiculo" type="string">
+          Vehicle class name (resolved)
+        </ResponseField>
+        
+        <ResponseField name="IdEstadoVehiculo" type="integer">
+          Vehicle state ID
+        </ResponseField>
+        
+        <ResponseField name="NombreEstadoVehiculo" type="string">
+          Vehicle state name (resolved)
+        </ResponseField>
+        
+        <ResponseField name="KilometrajeActual" type="integer">
+          Current mileage
+        </ResponseField>
+      </Expandable>
+    </ResponseField>
+  </Expandable>
+</ResponseField>
+
+<ResponseField name="timestamp" type="string">
+  Response timestamp
+</ResponseField>
+
+### Example Request
+
+```bash
+GET /vehiculo?pagina=1&por_pagina=10&marca=TOYOTA&idEstadoVehiculo=1
+```
+
+### Example Response
+
+```json
+{
+  "success": true,
+  "message": "Listado de vehículos obtenido exitosamente",
+  "data": {
+    "total": 25,
+    "pagina": 1,
+    "porPagina": 10,
+    "registros": [
+      {
+        "Id": 1,
+        "Placa": "P503067",
+        "Marca": "TOYOTA",
+        "Modelo": "HILUX",
+        "Anio": 2020,
+        "Color": "BLANCO",
+        "IdClaseVehiculo": 1,
+        "NombreClaseVehiculo": "Pick-up",
+        "IdEstadoVehiculo": 1,
+        "NombreEstadoVehiculo": "Activo",
+        "KilometrajeActual": 15000,
+        "Eliminado": false
+      },
+      {
+        "Id": 2,
+        "Placa": "P503068",
+        "Marca": "TOYOTA",
+        "Modelo": "LAND CRUISER",
+        "Anio": 2021,
+        "Color": "NEGRO",
+        "IdClaseVehiculo": 2,
+        "NombreClaseVehiculo": "SUV",
+        "IdEstadoVehiculo": 1,
+        "NombreEstadoVehiculo": "Activo",
+        "KilometrajeActual": 8500,
+        "Eliminado": false
+      }
+    ]
+  },
+  "timestamp": "2024-01-15T10:30:00Z"
+}
+```
+
+---
+
+## GET /vehiculo/todos/lista (Complete List)
+
+### Description
+
+Lists all active vehicles without pagination. Results are ordered by license plate. Use this endpoint when you need the complete dataset (e.g., for exports or dropdowns).
+
+<Warning>
+  This endpoint returns all records at once. Use with caution if you have a large number of vehicles.
+</Warning>
+
+### Query Parameters
+
+Supports the same filters as the paginated endpoint (except `pagina` and `por_pagina`):
+
+<ParamField query="placa" type="string">
+  Filter by license plate (partial match)
+</ParamField>
+
+<ParamField query="marca" type="string">
+  Filter by brand (partial match)
+</ParamField>
+
+<ParamField query="modelo" type="string">
+  Filter by model (partial match)
+</ParamField>
+
+<ParamField query="idClaseVehiculo" type="integer">
+  Filter by vehicle class ID (exact match)
+</ParamField>
+
+<ParamField query="idEstadoVehiculo" type="integer">
+  Filter by vehicle state ID (exact match)
+</ParamField>
+
+<ParamField query="busqueda" type="string">
+  General search across plate, brand, model, and color
+</ParamField>
+
+### Response
+
+<ResponseField name="success" type="boolean">
+  Indicates if the operation was successful
+</ResponseField>
+
+<ResponseField name="message" type="string">
+  Success message: "Listado completo de vehículos obtenido exitosamente"
+</ResponseField>
+
+<ResponseField name="data" type="array">
+  Array of all vehicle objects matching the filters (ordered by plate)
+</ResponseField>
+
+<ResponseField name="timestamp" type="string">
+  Response timestamp
+</ResponseField>
+
+### Example Request
+
+```bash
+GET /vehiculo/todos/lista?idEstadoVehiculo=1
+```
+
+### Example Response
+
+```json
+{
+  "success": true,
+  "message": "Listado completo de vehículos obtenido exitosamente",
+  "data": [
+    {
+      "Id": 1,
+      "Placa": "P503067",
+      "Marca": "TOYOTA",
+      "Modelo": "HILUX",
+      "Anio": 2020,
+      "Color": "BLANCO",
+      "IdClaseVehiculo": 1,
+      "NombreClaseVehiculo": "Pick-up",
+      "IdEstadoVehiculo": 1,
+      "NombreEstadoVehiculo": "Activo",
+      "KilometrajeActual": 15000
+    },
+    {
+      "Id": 2,
+      "Placa": "P503068",
+      "Marca": "TOYOTA",
+      "Modelo": "LAND CRUISER",
+      "Anio": 2021,
+      "Color": "NEGRO",
+      "IdClaseVehiculo": 2,
+      "NombreClaseVehiculo": "SUV",
+      "IdEstadoVehiculo": 1,
+      "NombreEstadoVehiculo": "Activo",
+      "KilometrajeActual": 8500
+    }
+  ],
+  "timestamp": "2024-01-15T10:30:00Z"
+}
+```
+
+---
+
+## Use Cases
+
+<CardGroup cols={2}>
+  <Card title="Paginated UI" icon="table">
+    Use `GET /vehiculo` for displaying vehicles in a paginated table or list
+  </Card>
+  
+  <Card title="Dropdown Lists" icon="list">
+    Use `GET /vehiculo/todos/lista` for populating dropdown selections
+  </Card>
+  
+  <Card title="Data Export" icon="download">
+    Use `GET /vehiculo/todos/lista` for exporting all vehicle data
+  </Card>
+  
+  <Card title="Search Results" icon="magnifying-glass">
+    Use `GET /vehiculo` with filters for search functionality
+  </Card>
+</CardGroup>
+
+## Error Responses
+
+<ResponseExample>
+```json 500 Internal Server Error
+{
+  "success": false,
+  "message": "Error interno del servidor",
+  "timestamp": "2024-01-15T10:30:00Z"
+}
+```
+</ResponseExample>

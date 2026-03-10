@@ -1,0 +1,279 @@
+---
+title: Vehicle Class Catalog
+description: Manage vehicle class catalog for categorizing vehicle types
+---
+
+# Vehicle Class Catalog API
+
+Manage the catalog of vehicle classes (ClaseVehiculo) used to categorize different types of vehicles in the fleet.
+
+**Base Path:** `/clase-vehiculo`
+
+## Endpoints
+
+### Create Vehicle Class
+
+```http
+POST /clase-vehiculo/
+```
+
+Creates a new vehicle class.
+
+#### Request Body
+
+```json
+{
+  "codigo": "PICKUP",
+  "nombre": "Pickup",
+  "descripcion": "Vehículos tipo pickup para carga ligera"
+}
+```
+
+#### Field Validations
+
+- **codigo** (required): Unique, uppercase, no spaces
+- **nombre** (required): Unique across active records
+- **descripcion** (optional): Max 250 characters
+
+#### Response
+
+```json
+{
+  "success": true,
+  "message": "Clase de vehículo creada exitosamente",
+  "data": {
+    "IdClaseVehiculo": 1,
+    "Codigo": "PICKUP",
+    "Nombre": "Pickup",
+    "Descripcion": "Vehículos tipo pickup para carga ligera",
+    "EsActivo": true
+  }
+}
+```
+
+---
+
+### Get Vehicle Class by ID
+
+```http
+GET /clase-vehiculo/{id_clase_vehiculo}
+```
+
+Retrieves a specific vehicle class by ID. Only returns active records.
+
+#### Path Parameters
+
+- **id_clase_vehiculo** (integer, required): Vehicle class ID
+
+#### Response
+
+```json
+{
+  "success": true,
+  "message": "Clase de vehículo obtenida exitosamente",
+  "data": {
+    "IdClaseVehiculo": 1,
+    "Codigo": "PICKUP",
+    "Nombre": "Pickup",
+    "Descripcion": "Vehículos tipo pickup para carga ligera",
+    "EsActivo": true
+  }
+}
+```
+
+---
+
+### List Vehicle Classes (Paginated)
+
+```http
+GET /clase-vehiculo/
+```
+
+Lists vehicle classes with pagination and optional filters.
+
+#### Query Parameters
+
+- **pagina** (integer, optional, default: 1): Page number (min: 1)
+- **por_pagina** (integer, optional, default: 10): Records per page (min: 1, max: 100)
+- **codigo** (string, optional): Filter by code (partial match)
+- **nombre** (string, optional): Filter by name (partial match)
+- **busqueda** (string, optional): General search in code, name, and description
+
+#### Response
+
+```json
+{
+  "success": true,
+  "message": "Listado de clases de vehículo obtenido exitosamente",
+  "data": {
+    "items": [
+      {
+        "IdClaseVehiculo": 1,
+        "Codigo": "SEDAN",
+        "Nombre": "Sedán",
+        "Descripcion": "Vehículos tipo sedán",
+        "EsActivo": true
+      },
+      {
+        "IdClaseVehiculo": 2,
+        "Codigo": "PICKUP",
+        "Nombre": "Pickup",
+        "Descripcion": "Vehículos tipo pickup",
+        "EsActivo": true
+      }
+    ],
+    "total": 6,
+    "pagina": 1,
+    "porPagina": 10,
+    "totalPaginas": 1
+  }
+}
+```
+
+---
+
+### List All Vehicle Classes (No Pagination)
+
+```http
+GET /clase-vehiculo/todos/lista
+```
+
+Retrieves all active vehicle classes without pagination. Ideal for dropdowns and select components.
+
+#### Query Parameters
+
+- **codigo** (string, optional): Filter by code
+- **nombre** (string, optional): Filter by name
+- **busqueda** (string, optional): General search
+
+#### Response
+
+```json
+{
+  "success": true,
+  "message": "Listado completo de clases de vehículo obtenido exitosamente",
+  "data": [
+    {
+      "IdClaseVehiculo": 1,
+      "Codigo": "SEDAN",
+      "Nombre": "Sedán"
+    },
+    {
+      "IdClaseVehiculo": 2,
+      "Codigo": "PICKUP",
+      "Nombre": "Pickup"
+    }
+  ]
+}
+```
+
+---
+
+### Update Vehicle Class
+
+```http
+PUT /clase-vehiculo/{id_clase_vehiculo}
+```
+
+Updates an existing vehicle class. Only provided fields are updated.
+
+#### Path Parameters
+
+- **id_clase_vehiculo** (integer, required): Vehicle class ID
+
+#### Request Body
+
+```json
+{
+  "nombre": "Pickup 4x4",
+  "descripcion": "Vehículos pickup con tracción 4x4"
+}
+```
+
+#### Validations
+
+- Record must exist and be active
+- If changing `codigo`, must be unique
+- If changing `nombre`, must be unique
+
+#### Response
+
+```json
+{
+  "success": true,
+  "message": "Clase de vehículo actualizada exitosamente",
+  "data": {
+    "IdClaseVehiculo": 2,
+    "Codigo": "PICKUP",
+    "Nombre": "Pickup 4x4",
+    "Descripcion": "Vehículos pickup con tracción 4x4",
+    "EsActivo": true
+  }
+}
+```
+
+---
+
+### Delete Vehicle Class
+
+```http
+DELETE /clase-vehiculo/{id_clase_vehiculo}
+```
+
+Performs a soft delete on a vehicle class. Cannot delete if there are active vehicles using this class.
+
+#### Path Parameters
+
+- **id_clase_vehiculo** (integer, required): Vehicle class ID
+
+#### Validations
+
+- Record must exist and be active
+- Cannot have active vehicles associated
+
+#### Response
+
+```json
+{
+  "success": true,
+  "message": "Clase de vehículo eliminada exitosamente",
+  "data": {
+    "IdClaseVehiculo": 1,
+    "EsActivo": false
+  }
+}
+```
+
+---
+
+## Error Responses
+
+### 404 Not Found
+
+```json
+{
+  "success": false,
+  "message": "Clase de vehículo no encontrada",
+  "data": null
+}
+```
+
+### 409 Conflict
+
+```json
+{
+  "success": false,
+  "message": "Ya existe una clase de vehículo con ese código",
+  "data": null
+}
+```
+
+### 500 Internal Server Error
+
+```json
+{
+  "success": false,
+  "message": "Error interno del servidor",
+  "data": null
+}
+```

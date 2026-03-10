@@ -1,0 +1,755 @@
+---
+title: "Authentication"
+description: "Learn how to authenticate and secure your API requests"
+---
+
+## Overview
+
+The Solicitud Transporte API uses **JWT (JSON Web Tokens)** for authentication and authorization. This guide explains how to obtain tokens, include them in requests, and manage token expiration.
+
+## Authentication System
+
+The API implements a dual-token system:
+
+- **Access Token**: Short-lived token for API requests (default: 60 minutes)
+- **Refresh Token**: Long-lived token for obtaining new access tokens (default: 24 hours)
+
+Both tokens are signed using the **HS256** algorithm with a secret key configured in your environment.
+
+## Configuration
+
+The JWT configuration is managed through environment variables in your `.env` file:
+
+```bash .env
+# JWT Configuration
+JWT_SECRET=your-secret-key-change-in-production
+JWT_ALGORITHM=HS256
+JWT_ACCESS_TOKEN_EXP_VALUE=60
+JWT_ACCESS_TOKEN_EXP_UNIT=minutes
+JWT_REFRESH_TOKEN_EXP_VALUE=24
+JWT_REFRESH_TOKEN_EXP_UNIT=hours
+
+# API Credentials
+API_USER=api_user
+API_PASSWORD=your-secure-password
+```
+
+<Warning>
+  **Security Best Practices**:
+  - Use a strong, randomly generated `JWT_SECRET` (minimum 32 characters)
+  - Never commit your `.env` file to version control
+  - Rotate your JWT secret periodically in production
+  - Use HTTPS in production environments
+</Warning>
+
+### Generating a Secure Secret
+
+Generate a cryptographically secure secret key:
+
+<CodeGroup>
+
+```bash Python
+python -c "import secrets; print(secrets.token_urlsafe(32))"
+```
+
+```bash OpenSSL
+openssl rand -base64 32
+```
+
+```bash Node.js
+node -e "console.log(require('crypto').randomBytes(32).toString('base64'))"
+```
+
+</CodeGroup>
+
+## Configuration Classes
+
+The JWT configuration is loaded from the `config.py` module:
+
+```python config.py
+class JWTConfig:
+    """Configuración de JWT"""
+
+    def __init__(self):
+        self.SECRET: str = os.getenv('JWT_SECRET', '')
+        self.ALGORITHM: str = os.getenv('JWT_ALGORITHM', 'HS256')
+        self.ACCESS_TOKEN_EXP_VALUE: int = int(os.getenv('JWT_ACCESS_TOKEN_EXP_VALUE', '60'))
+        self.ACCESS_TOKEN_EXP_UNIT: Literal['minutes', 'hours'] = os.getenv('JWT_ACCESS_TOKEN_EXP_UNIT', 'minutes')
+        self.REFRESH_TOKEN_EXP_VALUE: int = int(os.getenv('JWT_REFRESH_TOKEN_EXP_VALUE', '24'))
+        self.REFRESH_TOKEN_EXP_UNIT: Literal['minutes', 'hours'] = os.getenv('JWT_REFRESH_TOKEN_EXP_UNIT', 'hours')
+
+
+class APICredentials:
+    """Credenciales de la API"""
+
+    def __init__(self):
+        self.USER: str = os.getenv('API_USER', 'api_user')
+        self.PASSWORD: str = os.getenv('API_PASSWORD', '')
+```
+
+Access the configuration in your code:
+
+```python
+from config import get_settings
+
+settings = get_settings()
+
+# Access JWT config
+jwt_secret = settings.jwt.SECRET
+jwt_algorithm = settings.jwt.ALGORITHM
+access_token_exp = settings.jwt.ACCESS_TOKEN_EXP_VALUE
+
+# Access API credentials
+api_user = settings.api_credentials.USER
+api_password = settings.api_credentials.PASSWORD
+```
+
+## Obtaining Authentication Tokens
+
+<Note>
+  **Note**: The authentication endpoints are not yet implemented in the current version. The configuration shown here demonstrates how JWT authentication will work when implemented.
+</Note>
+
+### Login Request
+
+When implemented, you'll authenticate by sending credentials to the login endpoint:
+
+<CodeGroup>
+
+```bash cURL
+curl -X POST "http://localhost:8000/auth/login" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "username": "api_user",
+    "password": "your-secure-password"
+  }'
+```
+
+```python Python
+import requests
+
+url = "http://localhost:8000/auth/login"
+payload = {
+    "username": "api_user",
+    "password": "your-secure-password"
+}
+
+response = requests.post(url, json=payload)
+tokens = response.json()
+
+if tokens["exito"]:
+    access_token = tokens["datos"]["accessToken"]
+    refresh_token = tokens["datos"]["refreshToken"]
+    print(f"Access Token: {access_token}")
+else:
+    print(f"Authentication failed: {tokens['mensaje']}")
+```
+
+```javascript JavaScript
+const url = 'http://localhost:8000/auth/login';
+
+const payload = {
+  username: 'api_user',
+  password: 'your-secure-password'
+};
+
+fetch(url, {
+  method: 'POST',
+  headers: {
+    'Content-Type': 'application/json',
+  },
+  body: JSON.stringify(payload)
+})
+  .then(response => response.json())
+  .then(data => {
+    if (data.exito) {
+      const accessToken = data.datos.accessToken;
+      const refreshToken = data.datos.refreshToken;
+      
+      // Store tokens securely
+      localStorage.setItem('accessToken', accessToken);
+      localStorage.setItem('refreshToken', refreshToken);
+      
+      console.log('Authentication successful');
+    } else {
+      console.error('Authentication failed:', data.mensaje);
+    }
+  });
+```
+
+</CodeGroup>
+
+### Expected Response
+
+```json
+{
+  "exito": true,
+  "mensaje": "Autenticación exitosa",
+  "datos": {
+    "accessToken": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
+    "refreshToken": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
+    "tokenType": "Bearer",
+    "expiresIn": 3600,
+    "user": {
+      "id": 1,
+      "username": "api_user",
+      "email": "user@example.com",
+      "rol": "admin"
+    }
+  }
+}
+```
+
+## Making Authenticated Requests
+
+Once you have an access token, include it in the `Authorization` header of your requests:
+
+<CodeGroup>
+
+```bash cURL
+curl -X GET "http://localhost:8000/solicitud/" \
+  -H "Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..." \
+  -H "Content-Type: application/json"
+```
+
+```python Python
+import requests
+
+access_token = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
+
+headers = {
+    "Authorization": f"Bearer {access_token}",
+    "Content-Type": "application/json"
+}
+
+response = requests.get(
+    "http://localhost:8000/solicitud/",
+    headers=headers
+)
+
+data = response.json()
+print(data)
+```
+
+```javascript JavaScript
+const accessToken = localStorage.getItem('accessToken');
+
+fetch('http://localhost:8000/solicitud/', {
+  method: 'GET',
+  headers: {
+    'Authorization': `Bearer ${accessToken}`,
+    'Content-Type': 'application/json'
+  }
+})
+  .then(response => response.json())
+  .then(data => {
+    console.log('Solicitudes:', data.datos);
+  })
+  .catch(error => {
+    console.error('Error:', error);
+  });
+```
+
+</CodeGroup>
+
+## Token Refresh
+
+When your access token expires, use the refresh token to obtain a new one without requiring the user to log in again:
+
+<Steps>
+  <Step title="Detect token expiration">
+    When you receive a `401 Unauthorized` response, it typically means your access token has expired:
+
+    ```json
+    {
+      "exito": false,
+      "mensaje": "Token expirado",
+      "detalle": "El token de acceso ha expirado. Use el refresh token para obtener uno nuevo."
+    }
+    ```
+  </Step>
+
+  <Step title="Request a new access token">
+    Send your refresh token to the refresh endpoint:
+
+    <CodeGroup>
+
+    ```bash cURL
+    curl -X POST "http://localhost:8000/auth/refresh" \
+      -H "Content-Type: application/json" \
+      -d '{
+        "refreshToken": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
+      }'
+    ```
+
+    ```python Python
+    import requests
+
+    url = "http://localhost:8000/auth/refresh"
+    refresh_token = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
+
+    response = requests.post(
+        url,
+        json={"refreshToken": refresh_token}
+    )
+
+    tokens = response.json()
+
+    if tokens["exito"]:
+        new_access_token = tokens["datos"]["accessToken"]
+        print(f"New Access Token: {new_access_token}")
+    ```
+
+    ```javascript JavaScript
+    const refreshToken = localStorage.getItem('refreshToken');
+
+    fetch('http://localhost:8000/auth/refresh', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ refreshToken })
+    })
+      .then(response => response.json())
+      .then(data => {
+        if (data.exito) {
+          const newAccessToken = data.datos.accessToken;
+          localStorage.setItem('accessToken', newAccessToken);
+          console.log('Token refreshed successfully');
+        }
+      });
+    ```
+
+    </CodeGroup>
+  </Step>
+
+  <Step title="Use the new access token">
+    Update your stored access token and retry the original request.
+  </Step>
+</Steps>
+
+## Token Lifecycle Management
+
+### Automatic Token Refresh (Recommended)
+
+Implement automatic token refresh in your client application:
+
+```python Python Example
+import requests
+from datetime import datetime, timedelta
+
+class APIClient:
+    def __init__(self, base_url, username, password):
+        self.base_url = base_url
+        self.username = username
+        self.password = password
+        self.access_token = None
+        self.refresh_token = None
+        self.token_expiry = None
+
+    def login(self):
+        """Authenticate and store tokens"""
+        response = requests.post(
+            f"{self.base_url}/auth/login",
+            json={
+                "username": self.username,
+                "password": self.password
+            }
+        )
+        data = response.json()
+        
+        if data["exito"]:
+            self.access_token = data["datos"]["accessToken"]
+            self.refresh_token = data["datos"]["refreshToken"]
+            expires_in = data["datos"]["expiresIn"]
+            self.token_expiry = datetime.now() + timedelta(seconds=expires_in)
+            return True
+        return False
+
+    def refresh_access_token(self):
+        """Refresh the access token"""
+        response = requests.post(
+            f"{self.base_url}/auth/refresh",
+            json={"refreshToken": self.refresh_token}
+        )
+        data = response.json()
+        
+        if data["exito"]:
+            self.access_token = data["datos"]["accessToken"]
+            expires_in = data["datos"]["expiresIn"]
+            self.token_expiry = datetime.now() + timedelta(seconds=expires_in)
+            return True
+        return False
+
+    def get_headers(self):
+        """Get headers with valid access token"""
+        # Check if token is expired or about to expire (5 min buffer)
+        if self.token_expiry and datetime.now() >= self.token_expiry - timedelta(minutes=5):
+            self.refresh_access_token()
+        
+        return {
+            "Authorization": f"Bearer {self.access_token}",
+            "Content-Type": "application/json"
+        }
+
+    def get(self, endpoint):
+        """Make authenticated GET request"""
+        return requests.get(
+            f"{self.base_url}{endpoint}",
+            headers=self.get_headers()
+        )
+
+    def post(self, endpoint, data):
+        """Make authenticated POST request"""
+        return requests.post(
+            f"{self.base_url}{endpoint}",
+            json=data,
+            headers=self.get_headers()
+        )
+
+# Usage
+client = APIClient(
+    base_url="http://localhost:8000",
+    username="api_user",
+    password="your-secure-password"
+)
+
+if client.login():
+    # Make requests without worrying about token expiration
+    response = client.get("/solicitud/")
+    print(response.json())
+```
+
+### JavaScript/TypeScript Example
+
+```javascript
+class APIClient {
+  constructor(baseURL, username, password) {
+    this.baseURL = baseURL;
+    this.username = username;
+    this.password = password;
+    this.accessToken = null;
+    this.refreshToken = null;
+    this.tokenExpiry = null;
+  }
+
+  async login() {
+    const response = await fetch(`${this.baseURL}/auth/login`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        username: this.username,
+        password: this.password
+      })
+    });
+
+    const data = await response.json();
+    
+    if (data.exito) {
+      this.accessToken = data.datos.accessToken;
+      this.refreshToken = data.datos.refreshToken;
+      this.tokenExpiry = Date.now() + (data.datos.expiresIn * 1000);
+      return true;
+    }
+    return false;
+  }
+
+  async refreshAccessToken() {
+    const response = await fetch(`${this.baseURL}/auth/refresh`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ refreshToken: this.refreshToken })
+    });
+
+    const data = await response.json();
+    
+    if (data.exito) {
+      this.accessToken = data.datos.accessToken;
+      this.tokenExpiry = Date.now() + (data.datos.expiresIn * 1000);
+      return true;
+    }
+    return false;
+  }
+
+  async getHeaders() {
+    // Check if token is expired or about to expire (5 min buffer)
+    if (this.tokenExpiry && Date.now() >= this.tokenExpiry - (5 * 60 * 1000)) {
+      await this.refreshAccessToken();
+    }
+    
+    return {
+      'Authorization': `Bearer ${this.accessToken}`,
+      'Content-Type': 'application/json'
+    };
+  }
+
+  async get(endpoint) {
+    const headers = await this.getHeaders();
+    return fetch(`${this.baseURL}${endpoint}`, {
+      method: 'GET',
+      headers
+    });
+  }
+
+  async post(endpoint, data) {
+    const headers = await this.getHeaders();
+    return fetch(`${this.baseURL}${endpoint}`, {
+      method: 'POST',
+      headers,
+      body: JSON.stringify(data)
+    });
+  }
+}
+
+// Usage
+const client = new APIClient(
+  'http://localhost:8000',
+  'api_user',
+  'your-secure-password'
+);
+
+await client.login();
+
+// Make requests without worrying about token expiration
+const response = await client.get('/solicitud/');
+const data = await response.json();
+console.log(data);
+```
+
+## Multi-Factor Authentication (MFA)
+
+The API supports optional Multi-Factor Authentication using TOTP (Time-based One-Time Password):
+
+```bash .env
+# MFA Configuration
+MFA_ISSUER_NAME=ONI_Justicia
+MFA_VALID_WINDOW=1
+```
+
+### MFA Configuration Class
+
+```python config.py
+class MFAConfig:
+    """Configuración de MFA (Multi-Factor Authentication)"""
+
+    def __init__(self):
+        self.ISSUER_NAME: str = os.getenv('MFA_ISSUER_NAME', 'ONI_Justicia')
+        self.VALID_WINDOW: int = int(os.getenv('MFA_VALID_WINDOW', '1'))
+```
+
+<Info>
+  When MFA is enabled, the login flow requires an additional step where the user provides a 6-digit code from their authenticator app (e.g., Google Authenticator, Authy).
+</Info>
+
+## Security Best Practices
+
+<AccordionGroup>
+  <Accordion title="Token Storage" icon="database">
+    **Never store tokens in:**
+    - Plain text files
+    - Browser localStorage for sensitive applications
+    - URL parameters or GET requests
+    - Client-side code visible to users
+
+    **Recommended storage methods:**
+    - HTTP-only cookies (prevents XSS attacks)
+    - Secure session storage
+    - Mobile: Keychain (iOS) or Keystore (Android)
+    - Server-side: Encrypted database or secure vault
+  </Accordion>
+
+  <Accordion title="Token Transmission" icon="shield">
+    **Always:**
+    - Use HTTPS in production
+    - Include tokens in the Authorization header
+    - Validate tokens on the server side
+    - Implement rate limiting on auth endpoints
+
+    **Never:**
+    - Send tokens in URL query parameters
+    - Log tokens in plain text
+    - Share tokens between users
+    - Use tokens beyond their expiration time
+  </Accordion>
+
+  <Accordion title="Error Handling" icon="triangle-exclamation">
+    Handle authentication errors gracefully:
+
+    ```python
+    def handle_auth_error(response):
+        if response.status_code == 401:
+            # Token expired or invalid
+            refresh_token()
+            retry_request()
+        elif response.status_code == 403:
+            # Insufficient permissions
+            show_error("No tiene permisos para esta acción")
+        elif response.status_code == 429:
+            # Rate limit exceeded
+            wait_and_retry()
+    ```
+  </Accordion>
+
+  <Accordion title="Token Rotation" icon="rotate">
+    Implement token rotation in production:
+    
+    - Rotate JWT secret keys periodically (e.g., every 90 days)
+    - Issue new refresh tokens on each use
+    - Invalidate old tokens after rotation
+    - Maintain a blacklist for revoked tokens
+  </Accordion>
+</AccordionGroup>
+
+## Common Authentication Errors
+
+| Error Code | Message | Solution |
+|-----------|---------|----------|
+| 401 | Token no proporcionado | Include Authorization header with Bearer token |
+| 401 | Token inválido | Check token format and signature |
+| 401 | Token expirado | Refresh the access token using refresh token |
+| 403 | Permisos insuficientes | User doesn't have required permissions |
+| 422 | Credenciales inválidas | Check username and password |
+| 429 | Demasiadas solicitudes | Rate limit exceeded, wait before retrying |
+
+## Testing Authentication
+
+Test your authentication setup:
+
+<CodeGroup>
+
+```python Test Script
+import requests
+import time
+
+def test_authentication():
+    base_url = "http://localhost:8000"
+    
+    # Test 1: Login
+    print("Test 1: Login...")
+    response = requests.post(
+        f"{base_url}/auth/login",
+        json={
+            "username": "api_user",
+            "password": "your-secure-password"
+        }
+    )
+    assert response.status_code == 200
+    tokens = response.json()
+    assert tokens["exito"] == True
+    access_token = tokens["datos"]["accessToken"]
+    refresh_token = tokens["datos"]["refreshToken"]
+    print("✓ Login successful")
+    
+    # Test 2: Authenticated request
+    print("\nTest 2: Authenticated request...")
+    response = requests.get(
+        f"{base_url}/solicitud/",
+        headers={"Authorization": f"Bearer {access_token}"}
+    )
+    assert response.status_code == 200
+    print("✓ Authenticated request successful")
+    
+    # Test 3: Request without token
+    print("\nTest 3: Request without token...")
+    response = requests.get(f"{base_url}/solicitud/")
+    assert response.status_code == 401
+    print("✓ Unauthorized request blocked")
+    
+    # Test 4: Token refresh
+    print("\nTest 4: Token refresh...")
+    response = requests.post(
+        f"{base_url}/auth/refresh",
+        json={"refreshToken": refresh_token}
+    )
+    assert response.status_code == 200
+    new_tokens = response.json()
+    assert new_tokens["exito"] == True
+    print("✓ Token refresh successful")
+    
+    print("\n✓ All authentication tests passed!")
+
+if __name__ == "__main__":
+    test_authentication()
+```
+
+```bash Shell Script
+#!/bin/bash
+
+BASE_URL="http://localhost:8000"
+
+# Test 1: Login
+echo "Test 1: Login..."
+RESPONSE=$(curl -s -X POST "$BASE_URL/auth/login" \
+  -H "Content-Type: application/json" \
+  -d '{"username":"api_user","password":"your-secure-password"}')
+
+ACCESS_TOKEN=$(echo $RESPONSE | jq -r '.datos.accessToken')
+REFRESH_TOKEN=$(echo $RESPONSE | jq -r '.datos.refreshToken')
+
+if [ "$ACCESS_TOKEN" != "null" ]; then
+  echo "✓ Login successful"
+else
+  echo "✗ Login failed"
+  exit 1
+fi
+
+# Test 2: Authenticated request
+echo -e "\nTest 2: Authenticated request..."
+RESPONSE=$(curl -s -X GET "$BASE_URL/solicitud/" \
+  -H "Authorization: Bearer $ACCESS_TOKEN")
+
+if echo $RESPONSE | jq -e '.exito == true' > /dev/null; then
+  echo "✓ Authenticated request successful"
+else
+  echo "✗ Authenticated request failed"
+  exit 1
+fi
+
+# Test 3: Request without token
+echo -e "\nTest 3: Request without token..."
+STATUS=$(curl -s -o /dev/null -w "%{http_code}" -X GET "$BASE_URL/solicitud/")
+
+if [ "$STATUS" == "401" ]; then
+  echo "✓ Unauthorized request blocked"
+else
+  echo "✗ Unauthorized request not blocked"
+  exit 1
+fi
+
+# Test 4: Token refresh
+echo -e "\nTest 4: Token refresh..."
+RESPONSE=$(curl -s -X POST "$BASE_URL/auth/refresh" \
+  -H "Content-Type: application/json" \
+  -d "{\"refreshToken\":\"$REFRESH_TOKEN\"}")
+
+if echo $RESPONSE | jq -e '.exito == true' > /dev/null; then
+  echo "✓ Token refresh successful"
+else
+  echo "✗ Token refresh failed"
+  exit 1
+fi
+
+echo -e "\n✓ All authentication tests passed!"
+```
+
+</CodeGroup>
+
+## Next Steps
+
+<CardGroup cols={2}>
+  <Card title="Request Lifecycle" icon="route" href="/guides/request-lifecycle">
+    Understand how requests flow through the system
+  </Card>
+  
+  <Card title="API Reference" icon="book" href="/api/solicitud/overview">
+    Explore all available endpoints
+  </Card>
+  
+  <Card title="Error Handling" icon="triangle-exclamation" href="/concepts/error-handling">
+    Learn how to handle authentication errors
+  </Card>
+  
+  <Card title="Architecture" icon="diagram-project" href="/concepts/architecture">
+    Understand the system architecture
+  </Card>
+</CardGroup>

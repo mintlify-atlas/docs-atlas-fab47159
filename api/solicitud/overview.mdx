@@ -1,0 +1,87 @@
+---
+title: "Solicitud Overview"
+description: "API endpoints for managing transport solicitudes (requests)"
+---
+
+The Solicitud API provides complete CRUD operations for transport solicitudes, including approval workflow, status history tracking, and email notifications.
+
+## Base Path
+
+All Solicitud endpoints are prefixed with `/solicitud`.
+
+## Key Features
+
+- **Request Creation**: Create new transport solicitudes with multiple locations
+- **Approval Workflow**: Approve, reject, or cancel solicitudes
+- **Status Management**: Track status changes through complete history
+- **Location Management**: Manage multiple pickup/destination locations with return trips
+- **Email Notifications**: Automatic notifications to requesters and approvers
+- **Advanced Filtering**: Filter by status, department, priority, service type, dates, and more
+
+## Solicitud Lifecycle
+
+1. **PENDIENTE_APROBACION** - Initial state when created
+2. **APROBADA** - Approved by designated approver
+3. **RECHAZADA** - Rejected by approver (final state)
+4. **CANCELADA** - Cancelled by requester or approver (final state)
+5. **COMPLETADA** - All associated missions completed (final state)
+
+## Available Endpoints
+
+<CardGroup cols={2}>
+  <Card title="Create Solicitud" icon="plus" href="/api/solicitud/create">
+    Create a new transport solicitud
+  </Card>
+  <Card title="List Solicitudes" icon="list" href="/api/solicitud/list">
+    List solicitudes with pagination and filters
+  </Card>
+  <Card title="Get Solicitud" icon="file" href="/api/solicitud/get">
+    Retrieve a specific solicitud by ID
+  </Card>
+  <Card title="Update Solicitud" icon="pen" href="/api/solicitud/update">
+    Update a pending solicitud
+  </Card>
+  <Card title="Approve Solicitud" icon="check" href="/api/solicitud/approve">
+    Approve a pending solicitud
+  </Card>
+  <Card title="Reject Solicitud" icon="xmark" href="/api/solicitud/reject">
+    Reject a pending solicitud
+  </Card>
+  <Card title="Cancel Solicitud" icon="ban" href="/api/solicitud/cancel">
+    Cancel an active solicitud
+  </Card>
+  <Card title="Solicitud History" icon="clock-rotate-left" href="/api/solicitud/history">
+    View status change history
+  </Card>
+  <Card title="Delete Solicitud" icon="trash" href="/api/solicitud/delete">
+    Soft delete a pending solicitud
+  </Card>
+</CardGroup>
+
+## Common Response Format
+
+All endpoints return responses in the following format:
+
+```json
+{
+  "success": true,
+  "message": "Solicitud creada exitosamente",
+  "data": {
+    // Response data
+  }
+}
+```
+
+## Error Handling
+
+Error responses include:
+
+- **400** - Bad Request (validation errors)
+- **404** - Not Found (solicitud doesn't exist)
+- **409** - Conflict (invalid state transition)
+- **422** - Unprocessable Entity (business logic validation)
+- **500** - Internal Server Error
+
+<Note>
+  Missions are **not** created automatically when a solicitud is approved. The approver must manually create missions in the Missions module.
+</Note>

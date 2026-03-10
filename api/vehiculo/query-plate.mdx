@@ -1,0 +1,208 @@
+---
+title: 'Query License Plate'
+api: 'GET /vehiculo/consulta-placa/{placa}'
+description: 'Query vehicle information from external license plate API'
+---
+
+## Endpoint
+
+<ParamField path="method" type="string" default="GET">
+  GET
+</ParamField>
+
+<ParamField path="endpoint" type="string">
+  /vehiculo/consulta-placa/{placa}
+</ParamField>
+
+## Description
+
+Queries vehicle information from the external license plate API without creating a record in the system. This endpoint is useful for previewing vehicle data before creation or for validation purposes.
+
+<Info>
+  Only returns results if the vehicle owner belongs to the institution (configurable via `PLACA_API_PROPIETARIO_FILTRO` environment variable). If the vehicle doesn't belong to the institution, a 403 error is returned.
+</Info>
+
+## Path Parameters
+
+<ParamField path="placa" type="string" required>
+  Vehicle license plate to query. Will be automatically converted to uppercase and spaces removed.
+  
+  **Validation**: Must have at least one initial letter and four digits minimum (format: `^[A-Z]{1,}[0-9]{4,}$`)
+  
+  **Example**: `"P503067"`
+</ParamField>
+
+## Validations
+
+<Warning>
+  **Plate Format Validation**
+  
+  The plate must match the pattern: at least one initial letter followed by at least four digits.
+  
+  - Valid: `P503067`, `ABC1234`, `XY56789`
+  - Invalid: `1234`, `AB123`, `P50` (less than 4 digits)
+</Warning>
+
+## Response
+
+<ResponseField name="success" type="boolean">
+  Indicates if the operation was successful
+</ResponseField>
+
+<ResponseField name="message" type="string">
+  Success message: "Información de placa obtenida exitosamente"
+</ResponseField>
+
+<ResponseField name="data" type="object">
+  Vehicle information from the external API
+  
+  <Expandable title="External API Data Structure">
+    The structure depends on the external API but typically includes:
+    
+    <ResponseField name="placa" type="string">
+      License plate
+    </ResponseField>
+    
+    <ResponseField name="marca" type="string">
+      Vehicle brand
+    </ResponseField>
+    
+    <ResponseField name="modelo" type="string">
+      Vehicle model
+    </ResponseField>
+    
+    <ResponseField name="anio" type="integer">
+      Year of manufacture
+    </ResponseField>
+    
+    <ResponseField name="color" type="string">
+      Vehicle color
+    </ResponseField>
+    
+    <ResponseField name="numeroMotor" type="string">
+      Engine number
+    </ResponseField>
+    
+    <ResponseField name="numeroChasis" type="string">
+      Chassis number
+    </ResponseField>
+    
+    <ResponseField name="numeroVin" type="string">
+      VIN number
+    </ResponseField>
+    
+    <ResponseField name="claseVehiculo" type="string">
+      Vehicle class name
+    </ResponseField>
+    
+    <ResponseField name="propietario" type="string">
+      Vehicle owner
+    </ResponseField>
+    
+    <ResponseField name="fechaTarjetaCirculacion" type="string">
+      Circulation card date
+    </ResponseField>
+    
+    <ResponseField name="numeroPolizaSeguro" type="string">
+      Insurance policy number
+    </ResponseField>
+  </Expandable>
+</ResponseField>
+
+<ResponseField name="timestamp" type="string">
+  Response timestamp
+</ResponseField>
+
+## Example Request
+
+```bash
+GET /vehiculo/consulta-placa/P503067
+```
+
+## Example Response
+
+```json
+{
+  "success": true,
+  "message": "Información de placa obtenida exitosamente",
+  "data": {
+    "placa": "P503067",
+    "marca": "TOYOTA",
+    "modelo": "HILUX 4X4",
+    "anio": 2020,
+    "color": "BLANCO",
+    "numeroMotor": "1GRFE123456",
+    "numeroChasis": "JT123456789012345",
+    "numeroVin": "JT123456789012345",
+    "claseVehiculo": "Pick-up",
+    "propietario": "MINISTERIO DE HACIENDA",
+    "fechaTarjetaCirculacion": "2023-12-01",
+    "numeroPolizaSeguro": "POL123456789"
+  },
+  "timestamp": "2024-01-15T10:30:00Z"
+}
+```
+
+## Error Responses
+
+<ResponseExample>
+```json 400 Bad Request - Invalid Format
+{
+  "success": false,
+  "message": "La placa debe tener al menos una letra inicial y cuatro dígitos como mínimo.",
+  "timestamp": "2024-01-15T10:30:00Z"
+}
+```
+
+```json 404 Not Found - Plate Not Found
+{
+  "success": false,
+  "message": "No se encontró información para la placa P503067 en la API externa",
+  "timestamp": "2024-01-15T10:30:00Z"
+}
+```
+
+```json 403 Forbidden - Owner Verification Failed
+{
+  "success": false,
+  "message": "El vehículo no pertenece a la institución autorizada",
+  "timestamp": "2024-01-15T10:30:00Z"
+}
+```
+
+```json 502/503/504 External API Error
+{
+  "success": false,
+  "message": "Error al conectar con la API externa de placas",
+  "timestamp": "2024-01-15T10:30:00Z"
+}
+```
+</ResponseExample>
+
+## Use Cases
+
+<CardGroup cols={2}>
+  <Card title="Preview Data" icon="eye">
+    Preview vehicle information before creating a record
+  </Card>
+  
+  <Card title="Validation" icon="check">
+    Validate plate exists and belongs to institution
+  </Card>
+  
+  <Card title="Data Verification" icon="magnifying-glass">
+    Verify vehicle details match external records
+  </Card>
+  
+  <Card title="Owner Check" icon="user">
+    Confirm vehicle ownership before operations
+  </Card>
+</CardGroup>
+
+## Configuration
+
+<Info>
+  **Environment Variable**: `PLACA_API_PROPIETARIO_FILTRO`
+  
+  This variable configures which institution owners are allowed. Only vehicles belonging to the configured institution will return data from this endpoint.
+</Info>

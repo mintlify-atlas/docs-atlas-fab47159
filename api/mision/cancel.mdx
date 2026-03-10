@@ -1,0 +1,90 @@
+---
+title: 'Cancel Mission'
+api: 'POST /mision/{id}/cancelar'
+description: 'Cancel a mission with a required reason'
+---
+
+## Cancel Mission
+
+Cancels a mission by changing its state to `CANCELADA`.
+
+### Path Parameters
+
+<ParamField path="id" type="integer" required>
+  ID of the mission to cancel.
+</ParamField>
+
+### Request Body
+
+<ParamField body="motivo" type="string" required>
+  Reason for canceling the mission. Required and cannot be empty. Maximum 500 characters.
+</ParamField>
+
+### Response
+
+<ResponseField name="success" type="boolean">
+  Indicates if the request was successful.
+</ResponseField>
+
+<ResponseField name="message" type="string">
+  Response message: "Misión cancelada exitosamente"
+</ResponseField>
+
+<ResponseField name="data" type="object">
+  The cancelled mission object with the cancellation reason recorded.
+</ResponseField>
+
+### Validations
+
+- Mission cannot already be in `COMPLETADA` or `CANCELADA` state
+- Cancellation reason is required and cannot be empty
+
+<RequestExample>
+```bash cURL
+curl -X POST "https://api.example.com/mision/1/cancelar" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "motivo": "Solicitud cancelada por el solicitante"
+  }'
+```
+</RequestExample>
+
+<ResponseExample>
+```json 200 - Success
+{
+  "success": true,
+  "message": "Misión cancelada exitosamente",
+  "data": {
+    "idMision": 1,
+    "idSolicitud": 1,
+    "descripcion": "Traslado de personal al aeropuerto",
+    "fechaProgramada": "2025-06-15",
+    "idEstadoMision": 6,
+    "codigoEstado": "CANCELADA",
+    "motivoCancelacion": "Solicitud cancelada por el solicitante",
+    "fechaHoraCancelacion": "2025-06-14 16:30:00"
+  }
+}
+```
+
+```json 404 - Mission Not Found
+{
+  "success": false,
+  "message": "Misión no encontrada"
+}
+```
+
+```json 409 - Invalid State
+{
+  "success": false,
+  "message": "No se puede cancelar una misión que ya está COMPLETADA"
+}
+```
+
+```json 422 - Validation Error
+{
+  "success": false,
+  "message": "El motivo no puede estar vacío"
+}
+```
+</ResponseExample>

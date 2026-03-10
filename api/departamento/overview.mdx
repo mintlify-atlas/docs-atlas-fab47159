@@ -1,0 +1,111 @@
+---
+title: 'Departamento API'
+description: 'Department management with hierarchical structure support'
+icon: 'sitemap'
+---
+
+## Overview
+
+The Departamento API manages organizational departments with support for hierarchical structures, parent-child relationships, and department head assignments.
+
+## Endpoints
+
+### Create Department
+
+**POST** `/departamento/`
+
+Creates a new department with optional parent department and head assignment.
+
+**Validations:**
+- **codigo**: Required, unique, uppercase without spaces
+- **nombre**: Required
+- **departamentoPadreId**: If provided, must exist and be active
+- **idPerfilJefe**: If provided, must exist and be active
+
+---
+
+### List All Departments (Unpaginated)
+
+**GET** `/departamento/todos/lista`
+
+Retrieves all active departments without pagination, ordered by hierarchical level. Useful for dropdowns and organizational charts.
+
+**Query Parameters:**
+- `codigo` (string, optional): Filter by department code
+- `nombre` (string, optional): Filter by name
+- `nivelJerarquico` (integer, optional): Filter by hierarchical level
+- `departamentoPadreId` (integer, optional): Filter by parent department
+- `busqueda` (string, optional): General search
+
+---
+
+### List Departments (Paginated)
+
+**GET** `/departamento/`
+
+Retrieves departments with pagination and filtering support.
+
+**Query Parameters:**
+- `pagina` (integer, default: 1): Page number
+- `por_pagina` (integer, default: 10, max: 100): Records per page
+- `codigo` (string, optional): Partial search in code
+- `nombre` (string, optional): Partial search in name
+- `nivelJerarquico` (integer, optional): Exact match on hierarchical level
+- `departamentoPadreId` (integer, optional): Filter by parent department
+- `busqueda` (string, optional): Search across code, name, head, and location
+
+---
+
+### Get Department by ID
+
+**GET** `/departamento/{id_departamento}`
+
+Retrieves a specific department with parent department name included.
+
+**Path Parameters:**
+- `id_departamento` (integer, required): The department ID
+
+---
+
+### Update Department
+
+**PUT** `/departamento/{id_departamento}`
+
+Updates an existing department.
+
+**Path Parameters:**
+- `id_departamento` (integer, required): The department ID
+
+**Validations:**
+- Record must exist and be active
+- Code changes must maintain uniqueness
+- Parent changes validated to prevent circular references
+- Head profile must exist if changed
+
+---
+
+### Delete Department
+
+**DELETE** `/departamento/{id_departamento}`
+
+Performs logical deletion of a department.
+
+**Path Parameters:**
+- `id_departamento` (integer, required): The department ID
+
+**Validations:**
+- Record must exist and be active
+- Cannot have active subdepartments
+- Cannot have active requests
+- Cannot have active assigned vehicles
+- Cannot have active assigned drivers
+
+---
+
+## Response Codes
+
+- **200**: Success
+- **201**: Created
+- **404**: Not found
+- **409**: Conflict (duplicate, circular reference, or has dependencies)
+- **500**: Internal server error

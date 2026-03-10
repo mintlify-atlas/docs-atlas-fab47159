@@ -1,0 +1,292 @@
+---
+title: Request Status Catalog
+description: Manage request status catalog with workflow ordering and final state indicators
+---
+
+# Request Status Catalog API
+
+Manage the catalog of request statuses (EstadoSolicitud) used to track the lifecycle of transportation requests. This catalog includes workflow ordering and final state indicators.
+
+**Base Path:** `/estado-solicitud`
+
+## Endpoints
+
+### Create Request Status
+
+```http
+POST /estado-solicitud/
+```
+
+Creates a new request status.
+
+#### Request Body
+
+```json
+{
+  "codigo": "APROBADO",
+  "nombre": "Aprobado",
+  "esEstadoFinal": false,
+  "orden": 3,
+  "color": "#00FF00",
+  "descripcion": "La solicitud ha sido aprobada"
+}
+```
+
+#### Field Validations
+
+- **codigo** (required): Unique, uppercase, no spaces
+- **nombre** (required): Unique across active records
+- **esEstadoFinal** (required): Boolean indicating if this is a final workflow state
+- **orden** (required): Unique integer defining position in workflow
+- **color** (optional): Hex color for visual representation
+- **descripcion** (optional): Max 250 characters
+
+#### Response
+
+```json
+{
+  "success": true,
+  "message": "Estado de solicitud creado exitosamente",
+  "data": {
+    "IdEstadoSolicitud": 1,
+    "Codigo": "APROBADO",
+    "Nombre": "Aprobado",
+    "EsEstadoFinal": false,
+    "Orden": 3,
+    "Color": "#00FF00",
+    "Descripcion": "La solicitud ha sido aprobada",
+    "EsActivo": true
+  }
+}
+```
+
+---
+
+### Get Request Status by ID
+
+```http
+GET /estado-solicitud/{id_estado_solicitud}
+```
+
+Retrieves a specific request status by ID. Only returns active records.
+
+#### Path Parameters
+
+- **id_estado_solicitud** (integer, required): Request status ID
+
+#### Response
+
+```json
+{
+  "success": true,
+  "message": "Estado de solicitud obtenido exitosamente",
+  "data": {
+    "IdEstadoSolicitud": 1,
+    "Codigo": "APROBADO",
+    "Nombre": "Aprobado",
+    "EsEstadoFinal": false,
+    "Orden": 3,
+    "Color": "#00FF00",
+    "Descripcion": "La solicitud ha sido aprobada",
+    "EsActivo": true
+  }
+}
+```
+
+---
+
+### List Request Statuses (Paginated)
+
+```http
+GET /estado-solicitud/
+```
+
+Lists request statuses with pagination and optional filters. Results are ordered by the `Orden` field.
+
+#### Query Parameters
+
+- **pagina** (integer, optional, default: 1): Page number (min: 1)
+- **por_pagina** (integer, optional, default: 10): Records per page (min: 1, max: 100)
+- **codigo** (string, optional): Filter by code (partial match)
+- **nombre** (string, optional): Filter by name (partial match)
+- **esEstadoFinal** (boolean, optional): Filter by final state indicator
+- **busqueda** (string, optional): General search in code, name, and description
+
+#### Response
+
+```json
+{
+  "success": true,
+  "message": "Listado de estados de solicitud obtenido exitosamente",
+  "data": {
+    "items": [
+      {
+        "IdEstadoSolicitud": 1,
+        "Codigo": "PENDIENTE",
+        "Nombre": "Pendiente",
+        "EsEstadoFinal": false,
+        "Orden": 1,
+        "Color": "#FFA500",
+        "Descripcion": "Solicitud pendiente de revisión",
+        "EsActivo": true
+      }
+    ],
+    "total": 5,
+    "pagina": 1,
+    "porPagina": 10,
+    "totalPaginas": 1
+  }
+}
+```
+
+---
+
+### List All Request Statuses (No Pagination)
+
+```http
+GET /estado-solicitud/todos/lista
+```
+
+Retrieves all active request statuses without pagination. Ideal for dropdowns and select components. Ordered by `Orden` field.
+
+#### Query Parameters
+
+- **codigo** (string, optional): Filter by code
+- **nombre** (string, optional): Filter by name
+- **esEstadoFinal** (boolean, optional): Filter by final state indicator
+- **busqueda** (string, optional): General search
+
+#### Response
+
+```json
+{
+  "success": true,
+  "message": "Listado completo de estados de solicitud obtenido exitosamente",
+  "data": [
+    {
+      "IdEstadoSolicitud": 1,
+      "Codigo": "PENDIENTE",
+      "Nombre": "Pendiente",
+      "Orden": 1
+    },
+    {
+      "IdEstadoSolicitud": 2,
+      "Codigo": "APROBADO",
+      "Nombre": "Aprobado",
+      "Orden": 2
+    }
+  ]
+}
+```
+
+---
+
+### Update Request Status
+
+```http
+PUT /estado-solicitud/{id_estado_solicitud}
+```
+
+Updates an existing request status. Only provided fields are updated.
+
+#### Path Parameters
+
+- **id_estado_solicitud** (integer, required): Request status ID
+
+#### Request Body
+
+```json
+{
+  "nombre": "Aprobado y Programado",
+  "color": "#00AA00"
+}
+```
+
+#### Validations
+
+- Record must exist and be active
+- If changing `codigo`, must be unique
+- If changing `nombre`, must be unique
+- If changing `orden`, must be unique among active records
+
+#### Response
+
+```json
+{
+  "success": true,
+  "message": "Estado de solicitud actualizado exitosamente",
+  "data": {
+    "IdEstadoSolicitud": 1,
+    "Codigo": "APROBADO",
+    "Nombre": "Aprobado y Programado",
+    "Color": "#00AA00",
+    "EsActivo": true
+  }
+}
+```
+
+---
+
+### Delete Request Status
+
+```http
+DELETE /estado-solicitud/{id_estado_solicitud}
+```
+
+Performs a soft delete on a request status. Cannot delete if there are active requests using this status.
+
+#### Path Parameters
+
+- **id_estado_solicitud** (integer, required): Request status ID
+
+#### Validations
+
+- Record must exist and be active
+- Cannot have active requests in the historical status log
+
+#### Response
+
+```json
+{
+  "success": true,
+  "message": "Estado de solicitud eliminado exitosamente",
+  "data": {
+    "IdEstadoSolicitud": 1,
+    "EsActivo": false
+  }
+}
+```
+
+---
+
+## Error Responses
+
+### 404 Not Found
+
+```json
+{
+  "success": false,
+  "message": "Estado de solicitud no encontrado",
+  "data": null
+}
+```
+
+### 409 Conflict
+
+```json
+{
+  "success": false,
+  "message": "Ya existe un estado de solicitud con ese código",
+  "data": null
+}
+```
+
+### 500 Internal Server Error
+
+```json
+{
+  "success": false,
+  "message": "Error interno del servidor",
+  "data": null
+}
+```

@@ -1,0 +1,236 @@
+---
+title: "Cancel Solicitud"
+api: "POST /solicitud/{id}/cancelar"
+description: "Cancel an active solicitud"
+---
+
+## Overview
+
+Cancels a transport solicitud, changing its status to **CANCELADA** (final status). This action soft-deletes any missions that are not currently in progress or completed.
+
+<Warning>
+  Cancellation is a final action. Once cancelled, the solicitud cannot be reactivated or approved.
+</Warning>
+
+## Authentication
+
+Requires valid authentication token.
+
+## Path Parameters
+
+<ParamField path="id_solicitud" type="integer" required>
+  The unique ID of the solicitud to cancel
+</ParamField>
+
+## Request Body
+
+<ParamField body="motivo" type="string" required>
+  **Required** reason for cancellation. Must not be empty. This will be sent to both the requester and approver in notification emails.
+</ParamField>
+
+## Business Rules
+
+- Cannot cancel solicitudes already in a final status (RECHAZADA, COMPLETADA, CANCELADA)
+- Cannot cancel if there are missions with status **EN_CURSO** (in progress)
+- The reason (`motivo`) is **mandatory** and must not be empty
+- Missions that are not EN_CURSO or COMPLETADA are soft-deleted
+- Missions that are EN_CURSO or COMPLETADA remain active
+- The status change is recorded in the status history
+- Notification emails are sent to:
+  - Requester: Cancellation notification with reason
+  - Approver: Cancellation notification with reason
+
+## Response
+
+<ResponseField name="success" type="boolean">
+  Indicates if the operation was successful
+</ResponseField>
+
+<ResponseField name="message" type="string">
+  Success message
+</ResponseField>
+
+<ResponseField name="data" type="object">
+  The updated solicitud object with:
+  - Status updated to CANCELADA
+  - All solicitud details
+  - Associated locations
+  - Remaining active missions (only EN_CURSO or COMPLETADA, if any)
+</ResponseField>
+
+## Status Codes
+
+<ResponseField name="200" type="OK">
+  Solicitud cancelled successfully
+</ResponseField>
+
+<ResponseField name="400" type="Bad Request">
+  Validation error (missing or empty reason)
+</ResponseField>
+
+<ResponseField name="404" type="Not Found">
+  Solicitud with the specified ID does not exist
+</ResponseField>
+
+<ResponseField name="409" type="Conflict">
+  Cannot cancel (final status, missions in progress, or other conflict)
+</ResponseField>
+
+<ResponseField name="500" type="Internal Server Error">
+  Server error
+</ResponseField>
+
+<RequestExample>
+
+```bash cURL
+curl -X POST https://api.example.com/solicitud/42/cancelar \
+  -H "Authorization: Bearer YOUR_TOKEN" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "motivo": "Cambio de planes institucionales - evento pospuesto indefinidamente"
+  }'
+```
+
+```python Python
+import requests
+
+url = "https://api.example.com/solicitud/42/cancelar"
+headers = {
+    "Authorization": "Bearer YOUR_TOKEN",
+    "Content-Type": "application/json"
+}
+data = {
+    "motivo": "Cambio de planes institucionales - evento pospuesto indefinidamente"
+}
+
+response = requests.post(url, json=data, headers=headers)
+print(response.json())
+```
+
+```javascript JavaScript
+const response = await fetch('https://api.example.com/solicitud/42/cancelar', {
+  method: 'POST',
+  headers: {
+    'Authorization': 'Bearer YOUR_TOKEN',
+    'Content-Type': 'application/json'
+  },
+  body: JSON.stringify({
+    motivo: 'Cambio de planes institucionales - evento pospuesto indefinidamente'
+  })
+});
+
+const data = await response.json();
+console.log(data);
+```
+
+</RequestExample>
+
+<ResponseExample>
+
+```json Success Response (200)
+{
+  "success": true,
+  "message": "Solicitud cancelada exitosamente",
+  "data": {
+    "Id": 42,
+    "CodigoSolicitud": "SOL-2026-03-00000042",
+    "IdUsuarioSolicitante": 1,
+    "NombreSolicitante": "Juan Pérez",
+    "EmailSolicitante": "juan.perez@example.com",
+    "IdDepartamentoSolicitante": 2,
+    "NombreDepartamento": "Logística",
+    "IdUsuarioAprobador": 3,
+    "NombreAprobador": "María González",
+    "EmailAprobador": "maria.gonzalez@example.com",
+    "IdTipoPrioridadSolicitud": 2,
+    "NombrePrioridad": "Normal",
+    "IdTipoServicioSolicitud": 1,
+    "NombreTipoServicio": "Transporte de personal",
+    "Asunto": "Transporte de personal a sede central",
+    "Descripcion": "Se requiere transporte para personal de la unidad",
+    "CantidadPasajeros": 5,
+    "FechaServicioRequerido": "2026-04-15",
+    "HoraServicioRequerido": "08:00:00",
+    "IdEstadoActual": 4,
+    "CodigoEstadoActual": "CANCELADA",
+    "NombreEstadoActual": "Cancelada",
+    "ColorEstadoActual": "#808080",
+    "EsEstadoFinal": true,
+    "FechaHoraCreacion": "2026-03-10T14:30:00",
+    "FechaHoraActualizacion": "2026-03-12T10:15:00",
+    "lugares": [
+      {
+        "Id": 1,
+        "IdLugar": 5,
+        "NombreLugar": "Sede Central",
+        "EsOrigen": true,
+        "Orden": 0
+      }
+    ],
+    "misiones": []
+  }
+}
+```
+
+```json Error Response (400)
+{
+  "success": false,
+  "message": "El motivo es obligatorio para cancelar una solicitud",
+  "data": null
+}
+```
+
+```json Error Response (409) - Final Status
+{
+  "success": false,
+  "message": "No se puede cancelar una solicitud en estado 'Rechazada' (estado final)",
+  "data": null
+}
+```
+
+```json Error Response (409) - Missions In Progress
+{
+  "success": false,
+  "message": "No se puede cancelar la solicitud porque tiene misiones en curso",
+  "data": null
+}
+```
+
+```json Error Response (404)
+{
+  "success": false,
+  "message": "Solicitud con Id 999 no encontrada",
+  "data": null
+}
+```
+
+</ResponseExample>
+
+## Mission Handling
+
+When a solicitud is cancelled:
+
+1. **Missions with EN_CURSO status**: Remain active (cannot be deleted)
+2. **Missions with COMPLETADA status**: Remain active (historical record)
+3. **All other missions** (PENDIENTE, ASIGNADA, etc.): Soft-deleted
+
+If there are any missions with EN_CURSO status, the cancellation will fail with a 409 error.
+
+## Email Notifications
+
+When a solicitud is cancelled, automatic email notifications are sent to:
+
+1. **Requester** - with:
+   - Solicitud code and subject
+   - Cancellation date and time
+   - Cancellation reason
+
+2. **Approver** - with:
+   - Solicitud code and subject
+   - Cancellation date and time
+   - Cancellation reason
+   - List of affected missions (if any)
+
+<Note>
+  Provide a clear and detailed cancellation reason, as this information is shared with both the requester and approver.
+</Note>

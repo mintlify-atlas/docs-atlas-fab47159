@@ -1,0 +1,275 @@
+---
+title: "Solicitud History"
+api: "GET /solicitud/{id}/historico"
+description: "View complete status change history of a solicitud"
+---
+
+## Overview
+
+Retrieves the complete history of status changes for a specific solicitud, ordered chronologically from oldest to newest.
+
+## Authentication
+
+Requires valid authentication token.
+
+## Path Parameters
+
+<ParamField path="id_solicitud" type="integer" required>
+  The unique ID of the solicitud
+</ParamField>
+
+## Response
+
+<ResponseField name="success" type="boolean">
+  Indicates if the operation was successful
+</ResponseField>
+
+<ResponseField name="message" type="string">
+  Success message
+</ResponseField>
+
+<ResponseField name="data" type="object">
+  History data object
+  
+  <Expandable title="Data Properties">
+    <ResponseField name="idSolicitud" type="integer">
+      The solicitud ID
+    </ResponseField>
+    
+    <ResponseField name="codigoSolicitud" type="string">
+      The solicitud code (e.g., SOL-2026-03-00000042)
+    </ResponseField>
+    
+    <ResponseField name="historico" type="array">
+      Array of status change records, ordered chronologically (oldest first)
+      
+      <Expandable title="History Record Object">
+        <ResponseField name="IdEstadoSolicitud" type="integer">
+          Status ID
+        </ResponseField>
+        
+        <ResponseField name="IdSolicitud" type="integer">
+          Solicitud ID
+        </ResponseField>
+        
+        <ResponseField name="CodigoEstado" type="string">
+          Status code (e.g., PENDIENTE_APROBACION, APROBADA, RECHAZADA, CANCELADA, COMPLETADA)
+        </ResponseField>
+        
+        <ResponseField name="NombreEstado" type="string">
+          Status display name
+        </ResponseField>
+        
+        <ResponseField name="ColorEstado" type="string">
+          Status color in hex format (e.g., #FFA500)
+        </ResponseField>
+        
+        <ResponseField name="OrdenEstado" type="integer">
+          Status order number
+        </ResponseField>
+        
+        <ResponseField name="EsEstadoFinal" type="boolean">
+          Whether this is a final status
+        </ResponseField>
+        
+        <ResponseField name="MotivoEstadoSolicitud" type="string">
+          Reason for the status change (optional)
+        </ResponseField>
+        
+        <ResponseField name="FechaHoraCreacion" type="datetime">
+          Timestamp when this status was set
+        </ResponseField>
+        
+        <ResponseField name="FechaHoraActualizacion" type="datetime">
+          Last update timestamp
+        </ResponseField>
+      </Expandable>
+    </ResponseField>
+  </Expandable>
+</ResponseField>
+
+## Status Codes
+
+<ResponseField name="200" type="OK">
+  History retrieved successfully
+</ResponseField>
+
+<ResponseField name="404" type="Not Found">
+  Solicitud with the specified ID does not exist
+</ResponseField>
+
+<ResponseField name="500" type="Internal Server Error">
+  Server error
+</ResponseField>
+
+<RequestExample>
+
+```bash cURL
+curl -X GET https://api.example.com/solicitud/42/historico \
+  -H "Authorization: Bearer YOUR_TOKEN"
+```
+
+```python Python
+import requests
+
+url = "https://api.example.com/solicitud/42/historico"
+headers = {"Authorization": "Bearer YOUR_TOKEN"}
+
+response = requests.get(url, headers=headers)
+print(response.json())
+```
+
+```javascript JavaScript
+const response = await fetch('https://api.example.com/solicitud/42/historico', {
+  headers: {
+    'Authorization': 'Bearer YOUR_TOKEN'
+  }
+});
+
+const data = await response.json();
+console.log(data);
+```
+
+</RequestExample>
+
+<ResponseExample>
+
+```json Success Response (200) - Multiple Status Changes
+{
+  "success": true,
+  "message": "Histórico de estados obtenido exitosamente",
+  "data": {
+    "idSolicitud": 42,
+    "codigoSolicitud": "SOL-2026-03-00000042",
+    "historico": [
+      {
+        "IdEstadoSolicitud": 1,
+        "IdSolicitud": 42,
+        "CodigoEstado": "PENDIENTE_APROBACION",
+        "NombreEstado": "Pendiente de Aprobación",
+        "ColorEstado": "#FFA500",
+        "OrdenEstado": 1,
+        "EsEstadoFinal": false,
+        "MotivoEstadoSolicitud": "Solicitud creada",
+        "FechaHoraCreacion": "2026-03-10T14:30:00",
+        "FechaHoraActualizacion": "2026-03-10T14:30:00"
+      },
+      {
+        "IdEstadoSolicitud": 2,
+        "IdSolicitud": 42,
+        "CodigoEstado": "APROBADA",
+        "NombreEstado": "Aprobada",
+        "ColorEstado": "#00FF00",
+        "OrdenEstado": 2,
+        "EsEstadoFinal": false,
+        "MotivoEstadoSolicitud": "Solicitud cumple con todos los requisitos institucionales",
+        "FechaHoraCreacion": "2026-03-10T15:45:00",
+        "FechaHoraActualizacion": "2026-03-10T15:45:00"
+      },
+      {
+        "IdEstadoSolicitud": 5,
+        "IdSolicitud": 42,
+        "CodigoEstado": "COMPLETADA",
+        "NombreEstado": "Completada",
+        "ColorEstado": "#0000FF",
+        "OrdenEstado": 5,
+        "EsEstadoFinal": true,
+        "MotivoEstadoSolicitud": "Todas las misiones completadas exitosamente",
+        "FechaHoraCreacion": "2026-04-15T18:30:00",
+        "FechaHoraActualizacion": "2026-04-15T18:30:00"
+      }
+    ]
+  }
+}
+```
+
+```json Success Response (200) - Rejected Solicitud
+{
+  "success": true,
+  "message": "Histórico de estados obtenido exitosamente",
+  "data": {
+    "idSolicitud": 45,
+    "codigoSolicitud": "SOL-2026-03-00000045",
+    "historico": [
+      {
+        "IdEstadoSolicitud": 1,
+        "IdSolicitud": 45,
+        "CodigoEstado": "PENDIENTE_APROBACION",
+        "NombreEstado": "Pendiente de Aprobación",
+        "ColorEstado": "#FFA500",
+        "OrdenEstado": 1,
+        "EsEstadoFinal": false,
+        "MotivoEstadoSolicitud": "Solicitud creada",
+        "FechaHoraCreacion": "2026-03-11T09:15:00",
+        "FechaHoraActualizacion": "2026-03-11T09:15:00"
+      },
+      {
+        "IdEstadoSolicitud": 3,
+        "IdSolicitud": 45,
+        "CodigoEstado": "RECHAZADA",
+        "NombreEstado": "Rechazada",
+        "ColorEstado": "#FF0000",
+        "OrdenEstado": 3,
+        "EsEstadoFinal": true,
+        "MotivoEstadoSolicitud": "No cumple con los requisitos mínimos establecidos en la política institucional",
+        "FechaHoraCreacion": "2026-03-11T10:30:00",
+        "FechaHoraActualizacion": "2026-03-11T10:30:00"
+      }
+    ]
+  }
+}
+```
+
+```json Error Response (404)
+{
+  "success": false,
+  "message": "Solicitud con Id 999 no encontrada",
+  "data": null
+}
+```
+
+</ResponseExample>
+
+## Use Cases
+
+### Audit Trail
+The history endpoint provides a complete audit trail of all status changes, including:
+- Who initiated each change (via the change reason)
+- When each change occurred
+- Why the change was made (via the optional reason field)
+
+### Status Timeline
+Display a visual timeline of the solicitud's lifecycle:
+1. Creation (PENDIENTE_APROBACION)
+2. Approval/Rejection decision
+3. Cancellation (if applicable)
+4. Completion (if approved and all missions completed)
+
+### Transparency
+Provide users with full visibility into the decision-making process and status progression.
+
+## Common Status Flows
+
+### Approved and Completed
+```
+PENDIENTE_APROBACION → APROBADA → COMPLETADA
+```
+
+### Rejected
+```
+PENDIENTE_APROBACION → RECHAZADA
+```
+
+### Approved then Cancelled
+```
+PENDIENTE_APROBACION → APROBADA → CANCELADA
+```
+
+### Pending then Cancelled
+```
+PENDIENTE_APROBACION → CANCELADA
+```
+
+<Note>
+  The history is ordered chronologically (oldest first), making it easy to trace the complete lifecycle of a solicitud from creation to its current or final status.
+</Note>

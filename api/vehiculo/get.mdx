@@ -1,0 +1,268 @@
+---
+title: 'Get Vehicle'
+api: 'GET /vehiculo/{id}'
+description: 'Get a specific vehicle by ID'
+---
+
+## Endpoint
+
+<ParamField path="method" type="string" default="GET">
+  GET
+</ParamField>
+
+<ParamField path="endpoint" type="string">
+  /vehiculo/{id_vehiculo}
+</ParamField>
+
+## Description
+
+Retrieves a specific vehicle by its ID with all details including resolved foreign key names. Returns complete vehicle information including relationships with vehicle class, state, fuel type, default driver, and assigned department.
+
+## Path Parameters
+
+<ParamField path="id_vehiculo" type="integer" required>
+  Unique identifier of the vehicle to retrieve
+  
+  **Example**: `1`
+</ParamField>
+
+## Response
+
+<ResponseField name="success" type="boolean">
+  Indicates if the operation was successful
+</ResponseField>
+
+<ResponseField name="message" type="string">
+  Success message: "Vehículo obtenido exitosamente"
+</ResponseField>
+
+<ResponseField name="data" type="object">
+  Complete vehicle object with all fields and resolved foreign key names
+  
+  <Expandable title="Vehicle Object Properties">
+    <ResponseField name="Id" type="integer">
+      Unique vehicle identifier
+    </ResponseField>
+    
+    <ResponseField name="Placa" type="string">
+      Vehicle license plate
+    </ResponseField>
+    
+    <ResponseField name="Marca" type="string">
+      Vehicle brand
+    </ResponseField>
+    
+    <ResponseField name="Modelo" type="string">
+      Vehicle model
+    </ResponseField>
+    
+    <ResponseField name="Anio" type="integer">
+      Year of manufacture
+    </ResponseField>
+    
+    <ResponseField name="Color" type="string">
+      Vehicle color
+    </ResponseField>
+    
+    <ResponseField name="NumeroMotor" type="string">
+      Engine number
+    </ResponseField>
+    
+    <ResponseField name="NumeroChasis" type="string">
+      Chassis number
+    </ResponseField>
+    
+    <ResponseField name="NumeroVin" type="string">
+      VIN number
+    </ResponseField>
+    
+    <ResponseField name="CapacidadPasajeros" type="integer">
+      Passenger capacity
+    </ResponseField>
+    
+    <ResponseField name="CapacidadCombustibleGalones" type="number">
+      Fuel capacity in gallons
+    </ResponseField>
+    
+    <ResponseField name="KilometrajeActual" type="integer">
+      Current mileage
+    </ResponseField>
+    
+    <ResponseField name="FechaUltimaRevision" type="string">
+      Last revision date
+    </ResponseField>
+    
+    <ResponseField name="FechaProximoMantenimiento" type="string">
+      Next maintenance date
+    </ResponseField>
+    
+    <ResponseField name="FechaTarjetaCirculacion" type="string">
+      Circulation card date
+    </ResponseField>
+    
+    <ResponseField name="NumeroPolizaSeguro" type="string">
+      Insurance policy number
+    </ResponseField>
+    
+    <ResponseField name="FechaVencimientoSeguro" type="string">
+      Insurance expiration date
+    </ResponseField>
+    
+    <ResponseField name="Observaciones" type="string">
+      Additional observations
+    </ResponseField>
+    
+    <ResponseField name="Eliminado" type="boolean">
+      Soft delete flag
+    </ResponseField>
+    
+    <ResponseField name="FechaHoraCreacion" type="string">
+      Creation timestamp
+    </ResponseField>
+    
+    <ResponseField name="FechaHoraActualizacion" type="string">
+      Last update timestamp
+    </ResponseField>
+    
+    <ResponseField name="IdClaseVehiculo" type="integer">
+      Vehicle class ID
+    </ResponseField>
+    
+    <ResponseField name="NombreClaseVehiculo" type="string">
+      Vehicle class name (resolved from foreign key)
+    </ResponseField>
+    
+    <ResponseField name="IdEstadoVehiculo" type="integer">
+      Vehicle state ID
+    </ResponseField>
+    
+    <ResponseField name="NombreEstadoVehiculo" type="string">
+      Vehicle state name (resolved from foreign key)
+    </ResponseField>
+    
+    <ResponseField name="IdTipoCombustible" type="integer">
+      Fuel type ID
+    </ResponseField>
+    
+    <ResponseField name="NombreTipoCombustible" type="string">
+      Fuel type name (resolved from foreign key)
+    </ResponseField>
+    
+    <ResponseField name="IdMotoristaPorDefecto" type="integer">
+      Default driver profile ID
+    </ResponseField>
+    
+    <ResponseField name="NombreMotoristaPorDefecto" type="string">
+      Default driver name (resolved from foreign key)
+    </ResponseField>
+    
+    <ResponseField name="IdDepartamentoAsignado" type="integer">
+      Assigned department ID
+    </ResponseField>
+    
+    <ResponseField name="NombreDepartamentoAsignado" type="string">
+      Assigned department name (resolved from foreign key)
+    </ResponseField>
+  </Expandable>
+</ResponseField>
+
+<ResponseField name="timestamp" type="string">
+  Response timestamp
+</ResponseField>
+
+## Example Request
+
+```bash
+GET /vehiculo/1
+```
+
+## Example Response
+
+```json
+{
+  "success": true,
+  "message": "Vehículo obtenido exitosamente",
+  "data": {
+    "Id": 1,
+    "Placa": "P503067",
+    "Marca": "TOYOTA",
+    "Modelo": "HILUX",
+    "Anio": 2020,
+    "Color": "BLANCO",
+    "NumeroMotor": "1GRFE123456",
+    "NumeroChasis": "JT123456789012345",
+    "NumeroVin": "JT123456789012345",
+    "CapacidadPasajeros": 5,
+    "CapacidadCombustibleGalones": 80.0,
+    "KilometrajeActual": 15000,
+    "FechaUltimaRevision": "2024-01-15",
+    "FechaProximoMantenimiento": "2024-07-15",
+    "FechaTarjetaCirculacion": "2023-12-01",
+    "NumeroPolizaSeguro": "POL123456789",
+    "FechaVencimientoSeguro": "2025-12-01",
+    "Observaciones": "Vehículo en excelente estado",
+    "Eliminado": false,
+    "FechaHoraCreacion": "2024-01-15T10:30:00Z",
+    "FechaHoraActualizacion": "2024-01-20T14:45:00Z",
+    "IdClaseVehiculo": 1,
+    "NombreClaseVehiculo": "Pick-up",
+    "IdEstadoVehiculo": 1,
+    "NombreEstadoVehiculo": "Activo",
+    "IdTipoCombustible": 1,
+    "NombreTipoCombustible": "Diesel",
+    "IdMotoristaPorDefecto": 10,
+    "NombreMotoristaPorDefecto": "Juan Pérez",
+    "IdDepartamentoAsignado": 2,
+    "NombreDepartamentoAsignado": "Logística"
+  },
+  "timestamp": "2024-01-15T10:30:00Z"
+}
+```
+
+## Features
+
+<CardGroup cols={2}>
+  <Card title="Complete Details" icon="info-circle">
+    Returns all vehicle fields including optional ones
+  </Card>
+  
+  <Card title="Resolved FK Names" icon="link">
+    Foreign key IDs include their corresponding names
+  </Card>
+  
+  <Card title="Timestamps" icon="clock">
+    Includes creation and last update timestamps
+  </Card>
+  
+  <Card title="Relationships" icon="diagram-project">
+    Shows all relationships: class, state, fuel, driver, department
+  </Card>
+</CardGroup>
+
+## Error Responses
+
+<ResponseExample>
+```json 404 Not Found - Vehicle Not Found
+{
+  "success": false,
+  "message": "No se encontró el vehículo con ID 999",
+  "timestamp": "2024-01-15T10:30:00Z"
+}
+```
+
+```json 500 Internal Server Error
+{
+  "success": false,
+  "message": "Error interno del servidor",
+  "timestamp": "2024-01-15T10:30:00Z"
+}
+```
+</ResponseExample>
+
+## Use Cases
+
+- View complete vehicle details
+- Display vehicle information in detail pages
+- Pre-populate edit forms with current data
+- Verify vehicle status and relationships
+- Audit vehicle history and changes

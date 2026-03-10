@@ -1,0 +1,108 @@
+---
+title: 'Factura Misión API'
+description: 'Invoice and billing management for mission expenses'
+icon: 'file-invoice-dollar'
+---
+
+## Overview
+
+The Factura Misión API manages invoices for mission expenses, including fuel and other expenditures. Supports nested coupon creation and file attachments.
+
+## Endpoints
+
+### Create Invoice
+
+**POST** `/factura-mision/`
+
+Creates a new mission invoice with optional nested coupons.
+
+**Validations:**
+- **idMision**: Mission must exist and be active
+- **idTipoGasto**: Expense type must exist and be active
+- **cantidadGalones**: Required if idTipoGasto = 1 (Fuel)
+- **montoTotal**: Must be greater than 0
+- **cupones**: If provided, cannot be empty; sum ≤ montoTotal; no duplicate codes; montoCupon > 0
+
+---
+
+### List Invoices by Mission
+
+**GET** `/factura-mision/por-mision/{id_mision}`
+
+Retrieves all active invoices for a specific mission with associated coupons.
+
+**Path Parameters:**
+- `id_mision` (integer, required): The mission ID
+
+---
+
+### Download Invoice File
+
+**GET** `/factura-mision/{id_factura}/archivo`
+
+Downloads the attached invoice file (image or PDF).
+
+**Path Parameters:**
+- `id_factura` (integer, required): The invoice ID
+
+**Returns:** Binary file with appropriate content type and filename.
+
+---
+
+### List Invoices (Paginated)
+
+**GET** `/factura-mision/`
+
+Retrieves invoices with pagination and filtering.
+
+**Query Parameters:**
+- `pagina` (integer, default: 1): Page number
+- `porPagina` (integer, default: 10, max: 100): Records per page
+- `idMision` (integer, optional): Filter by mission
+- `idTipoGasto` (integer, optional): Filter by expense type
+- `busqueda` (string, optional): Search in invoice number or provider
+
+---
+
+### Get Invoice by ID
+
+**GET** `/factura-mision/{id_factura}`
+
+Retrieves a specific invoice with coupons and calculated fields.
+
+**Path Parameters:**
+- `id_factura` (integer, required): The invoice ID
+
+---
+
+### Update Invoice
+
+**PUT** `/factura-mision/{id_factura}`
+
+Updates an existing invoice.
+
+**Path Parameters:**
+- `id_factura` (integer, required): The invoice ID
+
+**Note:** Does not modify associated coupons. Use `/cupon-factura/` endpoints for coupon management.
+
+---
+
+### Delete Invoice
+
+**DELETE** `/factura-mision/{id_factura}`
+
+Performs logical deletion of an invoice.
+
+**Path Parameters:**
+- `id_factura` (integer, required): The invoice ID
+
+---
+
+## Response Codes
+
+- **200**: Success
+- **201**: Created
+- **404**: Not found
+- **409**: Conflict (validation errors)
+- **500**: Internal server error

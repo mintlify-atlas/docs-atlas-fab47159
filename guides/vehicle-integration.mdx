@@ -1,0 +1,388 @@
+---
+title: 'Vehicle Integration'
+description: 'Creating vehicles manually or using the external plate API'
+icon: 'car'
+---
+
+# Vehicle Integration
+
+The Solicitud Transporte API provides flexible options for creating and managing vehicles: manual entry with complete data or automatic creation using an external plate information API.
+
+## Overview
+
+Two approaches for vehicle creation:
+
+1. **Manual Creation** - Provide all vehicle data directly
+2. **Plate API Integration** - Query external plate registry and auto-populate data
+
+## Manual Vehicle Creation
+
+Create a vehicle by providing complete information.
+
+<CodeGroup>
+```bash cURL
+curl -X POST https://api.example.com/vehiculo \
+  -H "Content-Type: application/json" \
+  -d '{
+    "placa": "P503067",
+    "idClaseVehiculo": 1,
+    "idEstadoVehiculo": 1,
+    "idTipoCombustible": 1,
+    "idMotoristaPorDefecto": 10,
+    "idDepartamentoAsignado": 2,
+    "marca": "TOYOTA",
+    "modelo": "HILUX",
+    "anio": 2020,
+    "color": "BLANCO",
+    "numeroMotor": "1GRFE123456",
+    "numeroChasis": "JT123456789012345",
+    "numeroVin": "JT123456789012345",
+    "capacidadPasajeros": 5,
+    "capacidadCombustibleGalones": 80.0,
+    "kilometrajeActual": 15000,
+    "fechaUltimaRevision": "2024-01-15",
+    "fechaProximoMantenimiento": "2024-07-15",
+    "fechaTarjetaCirculacion": "2023-12-01",
+    "numeroPolizaSeguro": "POL123456789",
+    "fechaVencimientoSeguro": "2025-12-01",
+    "observaciones": "Vehículo en excelente estado"
+  }'
+```
+
+```json Response
+{
+  "success": true,
+  "message": "Vehículo creado exitosamente",
+  "data": {
+    "Id": 8,
+    "Placa": "P503067",
+    "IdClaseVehiculo": 1,
+    "NombreClaseVehiculo": "Pickup",
+    "IdEstadoVehiculo": 1,
+    "NombreEstadoVehiculo": "Activo",
+    "Marca": "TOYOTA",
+    "Modelo": "HILUX",
+    "Anio": 2020,
+    "Color": "BLANCO",
+    "CapacidadPasajeros": 5,
+    "CapacidadCombustibleGalones": 80.0,
+    "KilometrajeActual": 15000,
+    "FechaHoraCreacion": "2026-03-10 16:00:00"
+  }
+}
+```
+</CodeGroup>
+
+### Required Fields
+
+- **placa** - Unique license plate (auto-converted to uppercase, spaces removed)
+- **idClaseVehiculo** - Vehicle class ID (must exist and be active)
+- **idEstadoVehiculo** - Vehicle state ID (must exist and be active)
+
+### Optional Fields
+
+All other fields are optional but recommended for complete vehicle records:
+
+- Fuel type, default driver, assigned department
+- Make, model, year, color
+- Motor, chassis, and VIN numbers
+- Passenger and fuel capacity
+- Maintenance dates and insurance information
+
+<Note>
+  **Plate normalization:** Plates are automatically converted to uppercase with spaces removed. "p 503067" becomes "P503067".
+</Note>
+
+### Reactivation
+
+<Info>
+  If you try to create a vehicle with a plate that was previously soft-deleted, the system automatically **reactivates** the existing record instead of creating a new one.
+</Info>
+
+## Creating Vehicles from Plate API
+
+The platform integrates with an external plate information API to automatically retrieve and populate vehicle data.
+
+### How It Works
+
+<Steps>
+  <Step title="API authentication">
+    The system authenticates with the external plate registry API using credentials from environment variables.
+  </Step>
+
+  <Step title="Query vehicle data">
+    Sends the plate number to retrieve complete vehicle information.
+  </Step>
+
+  <Step title="Ownership verification">
+    Validates that the vehicle belongs to your institution (configured via `PLACA_API_PROPIETARIO_FILTRO`).
+  </Step>
+
+  <Step title="Class mapping">
+    Automatically maps the vehicle class from the API to your local vehicle class catalog.
+  </Step>
+
+  <Step title="Create vehicle">
+    Creates the vehicle record with auto-populated data plus any additional fields you provide.
+  </Step>
+</Steps>
+
+### Making the Request
+
+<CodeGroup>
+```bash cURL
+curl -X POST https://api.example.com/vehiculo/crear-por-placa \
+  -H "Content-Type: application/json" \
+  -d '{
+    "placa": "P503067",
+    "idTipoCombustible": 1,
+    "idDepartamentoAsignado": 2,
+    "observaciones": "Vehículo ingresado desde API de placas"
+  }'
+```
+
+```json Response
+{
+  "success": true,
+  "message": "Vehículo creado exitosamente desde API de placas",
+  "data": {
+    "Id": 9,
+    "Placa": "P503067",
+    "Marca": "TOYOTA",
+    "Modelo": "HILUX 4X4",
+    "Anio": 2020,
+    "Color": "BLANCO",
+    "NumeroMotor": "1GRFE123456",
+    "NumeroChasis": "JT123456789012345",
+    "NumeroVin": "JT123456789012345",
+    "FechaTarjetaCirculacion": "2023-12-01",
+    "NumeroPolizaSeguro": "POL123456789",
+    "IdClaseVehiculo": 1,
+    "NombreClaseVehiculo": "Pickup",
+    "IdEstadoVehiculo": 1,
+    "NombreEstadoVehiculo": "Activo",
+    "FechaHoraCreacion": "2026-03-10 16:15:00"
+  }
+}
+```
+</CodeGroup>
+
+### Auto-Populated Fields
+
+The plate API automatically provides:
+
+- Vehicle make (marca)
+- Model (modelo)
+- Year (anio)
+- Color (color)
+- Motor number (numeroMotor)
+- Chassis number (numeroChasis)
+- VIN number (numeroVin)
+- Registration card date (fechaTarjetaCirculacion)
+- Insurance policy number (numeroPolizaSeguro)
+- Vehicle class (mapped to your catalog)
+
+### Ownership Validation
+
+<Warning>
+  The API only creates vehicles that belong to your institution. If the vehicle owner doesn't match the configured filter (`PLACA_API_PROPIETARIO_FILTRO`), you'll receive a **403 Forbidden** error.
+</Warning>
+
+```json 403 Response
+{
+  "success": false,
+  "message": "El vehículo no pertenece a la institución",
+  "statusCode": 403
+}
+```
+
+### Class Mapping
+
+<Note>
+  The vehicle class returned by the external API must exist in your local `ClaseVehiculo` catalog. If the class doesn't exist, you'll receive a **404 Not Found** error asking you to create the class first.
+</Note>
+
+## Querying Plate Information
+
+You can query the external plate API without creating a vehicle:
+
+<CodeGroup>
+```bash cURL
+curl https://api.example.com/vehiculo/consulta-placa/P503067
+```
+
+```json Response
+{
+  "success": true,
+  "message": "Información de placa obtenida exitosamente",
+  "data": {
+    "placa": "P503067",
+    "marca": "TOYOTA",
+    "modelo": "HILUX 4X4",
+    "anio": 2020,
+    "color": "BLANCO",
+    "numeroMotor": "1GRFE123456",
+    "numeroChasis": "JT123456789012345",
+    "numeroVin": "JT123456789012345",
+    "claseVehiculo": "Pickup",
+    "propietario": "MINISTERIO DE OBRAS PÚBLICAS",
+    "fechaTarjetaCirculacion": "2023-12-01",
+    "polizaSeguro": "POL123456789"
+  }
+}
+```
+</CodeGroup>
+
+<Tip>
+  Use this endpoint to preview vehicle data before creating the record, or to verify ownership.
+</Tip>
+
+### Plate Format Validation
+
+Plates must have:
+- At least **one letter** at the beginning
+- At least **four digits** after the letters
+
+Examples:
+- ✅ `P503067` - Valid
+- ✅ `ABC1234` - Valid
+- ❌ `123456` - Invalid (no letters)
+- ❌ `P123` - Invalid (less than 4 digits)
+
+## Updating Vehicles
+
+Update any vehicle field after creation:
+
+```bash cURL
+curl -X PUT https://api.example.com/vehiculo/8 \
+  -H "Content-Type: application/json" \
+  -d '{
+    "kilometrajeActual": 15500,
+    "fechaProximoMantenimiento": "2024-08-15",
+    "observaciones": "Mantenimiento preventivo realizado"
+  }'
+```
+
+<Note>
+  All fields in the update are optional. Only provide the fields you want to change.
+</Note>
+
+## Managing Vehicle States
+
+Vehicles can have different states (Active, In Maintenance, Out of Service, etc.) managed through the `idEstadoVehiculo` field:
+
+```bash cURL
+curl -X PUT https://api.example.com/vehiculo/8 \
+  -H "Content-Type: application/json" \
+  -d '{
+    "idEstadoVehiculo": 2
+  }'
+```
+
+<Tip>
+  Use the `/estado-vehiculo` endpoints to retrieve available vehicle states for your application.
+</Tip>
+
+## Filtering and Searching
+
+Find vehicles with powerful filters:
+
+```bash cURL
+curl "https://api.example.com/vehiculo?placa=P5&idClaseVehiculo=1&idEstadoVehiculo=1&pagina=1&por_pagina=20"
+```
+
+Available filters:
+- `placa` - Partial plate search
+- `marca` - Partial make search
+- `modelo` - Partial model search
+- `idClaseVehiculo` - Filter by vehicle class
+- `idEstadoVehiculo` - Filter by vehicle state
+- `busqueda` - Search across plate, make, model, and color
+
+<Note>
+  Use `/vehiculo/todos/lista` for unpaginated results (useful for dropdowns).
+</Note>
+
+## Deleting Vehicles
+
+Soft-delete vehicles that are no longer in use:
+
+```bash cURL
+curl -X DELETE https://api.example.com/vehiculo/8
+```
+
+<Warning>
+  Vehicles cannot be deleted if they have active missions assigned. Complete or cancel all missions first.
+</Warning>
+
+## Integration Configuration
+
+To enable the plate API integration, configure these environment variables:
+
+```bash
+# Plate API credentials
+PLACA_API_URL=https://external-api.gov/placa
+PLACA_API_USERNAME=your_username
+PLACA_API_PASSWORD=your_password
+
+# Ownership filter (institution name to match)
+PLACA_API_PROPIETARIO_FILTRO=MINISTERIO DE OBRAS PÚBLICAS
+```
+
+<Tip>
+  The `PLACA_API_PROPIETARIO_FILTRO` value should match exactly how your institution name appears in the external registry.
+</Tip>
+
+## Error Handling
+
+Common error scenarios:
+
+<AccordionGroup>
+  <Accordion title="409 Conflict - Duplicate plate">
+    The plate already exists for an active vehicle. Use PUT to update the existing vehicle instead.
+  </Accordion>
+
+  <Accordion title="403 Forbidden - Not institution vehicle">
+    The vehicle doesn't belong to your institution according to the external registry. Cannot create.
+  </Accordion>
+
+  <Accordion title="404 Not Found - Vehicle class missing">
+    The vehicle class from the external API doesn't exist in your catalog. Create the class first through `/clase-vehiculo` endpoint.
+  </Accordion>
+
+  <Accordion title="404 Not Found - Plate not found">
+    The plate doesn't exist in the external registry. Use manual creation instead.
+  </Accordion>
+
+  <Accordion title="502/503/504 - External API error">
+    The external plate API is unavailable or timing out. Try again later or use manual creation.
+  </Accordion>
+</AccordionGroup>
+
+## Best Practices
+
+<AccordionGroup>
+  <Accordion title="Prefer plate API when available">
+    Use the plate API integration to ensure data accuracy and reduce manual entry errors.
+  </Accordion>
+
+  <Accordion title="Query before creating">
+    Use `/consulta-placa` to preview data and verify ownership before creating a vehicle record.
+  </Accordion>
+
+  <Accordion title="Maintain vehicle classes catalog">
+    Keep your `ClaseVehiculo` catalog synchronized with common vehicle types from the external API.
+  </Accordion>
+
+  <Accordion title="Track maintenance schedules">
+    Use the maintenance date fields (`fechaUltimaRevision`, `fechaProximoMantenimiento`) to stay on top of vehicle servicing.
+  </Accordion>
+
+  <Accordion title="Keep insurance current">
+    Regularly update insurance policy information (`numeroPolizaSeguro`, `fechaVencimientoSeguro`) to ensure compliance.
+  </Accordion>
+
+  <Accordion title="Update mileage after missions">
+    While missions track mileage automatically, update `kilometrajeActual` if the vehicle is used outside the mission system.
+  </Accordion>
+</AccordionGroup>

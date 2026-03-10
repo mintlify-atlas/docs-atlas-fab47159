@@ -1,0 +1,324 @@
+---
+title: 'Create Vehicle'
+api: 'POST /vehiculo'
+description: 'Create a new vehicle with complete data'
+---
+
+## Endpoint
+
+<ParamField path="method" type="string" default="POST">
+  POST
+</ParamField>
+
+<ParamField path="endpoint" type="string">
+  /vehiculo
+</ParamField>
+
+## Description
+
+Creates a new vehicle record with complete data. This endpoint requires all vehicle information to be provided in the request body.
+
+## Request Body
+
+<ParamField body="placa" type="string" required>
+  Vehicle license plate (unique). Automatically converted to uppercase and spaces removed.
+  
+  **Example**: `"P503067"`
+</ParamField>
+
+<ParamField body="idClaseVehiculo" type="integer" required>
+  ID of the vehicle class. Must exist and be active in the catalog.
+  
+  **Example**: `1`
+</ParamField>
+
+<ParamField body="idEstadoVehiculo" type="integer" required>
+  ID of the vehicle state. Must exist and be active in the catalog.
+  
+  **Example**: `1`
+</ParamField>
+
+<ParamField body="idTipoCombustible" type="integer">
+  ID of the fuel type. Optional. Must exist if provided.
+  
+  **Example**: `1`
+</ParamField>
+
+<ParamField body="idMotoristaPorDefecto" type="integer">
+  ID of the default driver profile. Optional. Must exist if provided.
+  
+  **Example**: `10`
+</ParamField>
+
+<ParamField body="idDepartamentoAsignado" type="integer">
+  ID of the assigned department. Optional. Must exist if provided.
+  
+  **Example**: `2`
+</ParamField>
+
+<ParamField body="marca" type="string">
+  Vehicle brand. Maximum 100 characters.
+  
+  **Example**: `"TOYOTA"`
+</ParamField>
+
+<ParamField body="modelo" type="string">
+  Vehicle model. Maximum 100 characters.
+  
+  **Example**: `"HILUX"`
+</ParamField>
+
+<ParamField body="anio" type="integer">
+  Year of manufacture.
+  
+  **Example**: `2020`
+</ParamField>
+
+<ParamField body="color" type="string">
+  Vehicle color. Maximum 50 characters.
+  
+  **Example**: `"BLANCO"`
+</ParamField>
+
+<ParamField body="numeroMotor" type="string">
+  Engine number. Maximum 100 characters.
+  
+  **Example**: `"1GRFE123456"`
+</ParamField>
+
+<ParamField body="numeroChasis" type="string">
+  Chassis number. Maximum 100 characters.
+  
+  **Example**: `"JT123456789012345"`
+</ParamField>
+
+<ParamField body="numeroVin" type="string">
+  VIN number. Maximum 100 characters.
+  
+  **Example**: `"JT123456789012345"`
+</ParamField>
+
+<ParamField body="capacidadPasajeros" type="integer">
+  Passenger capacity.
+  
+  **Example**: `5`
+</ParamField>
+
+<ParamField body="capacidadCombustibleGalones" type="number">
+  Fuel capacity in gallons.
+  
+  **Example**: `80.0`
+</ParamField>
+
+<ParamField body="kilometrajeActual" type="integer">
+  Current mileage.
+  
+  **Example**: `15000`
+</ParamField>
+
+<ParamField body="fechaUltimaRevision" type="string">
+  Last revision date (YYYY-MM-DD format).
+  
+  **Example**: `"2024-01-15"`
+</ParamField>
+
+<ParamField body="fechaProximoMantenimiento" type="string">
+  Next maintenance date (YYYY-MM-DD format).
+  
+  **Example**: `"2024-07-15"`
+</ParamField>
+
+<ParamField body="fechaTarjetaCirculacion" type="string">
+  Circulation card date (YYYY-MM-DD format).
+  
+  **Example**: `"2023-12-01"`
+</ParamField>
+
+<ParamField body="numeroPolizaSeguro" type="string">
+  Insurance policy number. Maximum 100 characters.
+  
+  **Example**: `"POL123456789"`
+</ParamField>
+
+<ParamField body="fechaVencimientoSeguro" type="string">
+  Insurance expiration date (YYYY-MM-DD format).
+  
+  **Example**: `"2025-12-01"`
+</ParamField>
+
+<ParamField body="observaciones" type="string">
+  Additional observations.
+  
+  **Example**: `"Vehículo en excelente estado"`
+</ParamField>
+
+## Validations
+
+<Warning>
+  **Important Validations**
+  
+  - **placa**: Required, unique, converted to uppercase without spaces
+  - **idClaseVehiculo**: Required, must exist and be active
+  - **idEstadoVehiculo**: Required, must exist and be active
+  - **Optional FKs**: If provided (idTipoCombustible, idMotoristaPorDefecto, idDepartamentoAsignado), they must exist
+</Warning>
+
+<Info>
+  If a vehicle with the same plate was previously deleted, the system will reactivate that record instead of creating a new one.
+</Info>
+
+## Response
+
+<ResponseField name="success" type="boolean">
+  Indicates if the operation was successful
+</ResponseField>
+
+<ResponseField name="message" type="string">
+  Success message: "Vehículo creado exitosamente"
+</ResponseField>
+
+<ResponseField name="data" type="object">
+  The created vehicle object with all fields and resolved foreign key names
+  
+  <Expandable title="Vehicle Object Properties">
+    <ResponseField name="Id" type="integer">
+      Unique vehicle identifier
+    </ResponseField>
+    
+    <ResponseField name="Placa" type="string">
+      Vehicle license plate
+    </ResponseField>
+    
+    <ResponseField name="Marca" type="string">
+      Vehicle brand
+    </ResponseField>
+    
+    <ResponseField name="Modelo" type="string">
+      Vehicle model
+    </ResponseField>
+    
+    <ResponseField name="IdClaseVehiculo" type="integer">
+      Vehicle class ID
+    </ResponseField>
+    
+    <ResponseField name="NombreClaseVehiculo" type="string">
+      Vehicle class name (resolved)
+    </ResponseField>
+    
+    <ResponseField name="IdEstadoVehiculo" type="integer">
+      Vehicle state ID
+    </ResponseField>
+    
+    <ResponseField name="NombreEstadoVehiculo" type="string">
+      Vehicle state name (resolved)
+    </ResponseField>
+    
+    <ResponseField name="FechaHoraCreacion" type="string">
+      Creation timestamp
+    </ResponseField>
+  </Expandable>
+</ResponseField>
+
+<ResponseField name="timestamp" type="string">
+  Response timestamp
+</ResponseField>
+
+## Example Request
+
+```json
+{
+  "placa": "P503067",
+  "idClaseVehiculo": 1,
+  "idEstadoVehiculo": 1,
+  "idTipoCombustible": 1,
+  "idMotoristaPorDefecto": 10,
+  "idDepartamentoAsignado": 2,
+  "marca": "TOYOTA",
+  "modelo": "HILUX",
+  "anio": 2020,
+  "color": "BLANCO",
+  "numeroMotor": "1GRFE123456",
+  "numeroChasis": "JT123456789012345",
+  "numeroVin": "JT123456789012345",
+  "capacidadPasajeros": 5,
+  "capacidadCombustibleGalones": 80.0,
+  "kilometrajeActual": 15000,
+  "fechaUltimaRevision": "2024-01-15",
+  "fechaProximoMantenimiento": "2024-07-15",
+  "fechaTarjetaCirculacion": "2023-12-01",
+  "numeroPolizaSeguro": "POL123456789",
+  "fechaVencimientoSeguro": "2025-12-01",
+  "observaciones": "Vehículo en excelente estado"
+}
+```
+
+## Example Response
+
+```json
+{
+  "success": true,
+  "message": "Vehículo creado exitosamente",
+  "data": {
+    "Id": 1,
+    "Placa": "P503067",
+    "Marca": "TOYOTA",
+    "Modelo": "HILUX",
+    "Anio": 2020,
+    "Color": "BLANCO",
+    "NumeroMotor": "1GRFE123456",
+    "NumeroChasis": "JT123456789012345",
+    "NumeroVin": "JT123456789012345",
+    "CapacidadPasajeros": 5,
+    "CapacidadCombustibleGalones": 80.0,
+    "KilometrajeActual": 15000,
+    "FechaUltimaRevision": "2024-01-15",
+    "FechaProximoMantenimiento": "2024-07-15",
+    "FechaTarjetaCirculacion": "2023-12-01",
+    "NumeroPolizaSeguro": "POL123456789",
+    "FechaVencimientoSeguro": "2025-12-01",
+    "Observaciones": "Vehículo en excelente estado",
+    "IdClaseVehiculo": 1,
+    "NombreClaseVehiculo": "Pick-up",
+    "IdEstadoVehiculo": 1,
+    "NombreEstadoVehiculo": "Activo",
+    "IdTipoCombustible": 1,
+    "NombreTipoCombustible": "Diesel",
+    "IdMotoristaPorDefecto": 10,
+    "NombreMotoristaPorDefecto": "Juan Pérez",
+    "IdDepartamentoAsignado": 2,
+    "NombreDepartamentoAsignado": "Logística",
+    "Eliminado": false,
+    "FechaHoraCreacion": "2024-01-15T10:30:00Z",
+    "FechaHoraActualizacion": null
+  },
+  "timestamp": "2024-01-15T10:30:00Z"
+}
+```
+
+## Error Responses
+
+<ResponseExample>
+```json 409 Conflict - Duplicate Plate
+{
+  "success": false,
+  "message": "Ya existe un vehículo con la placa P503067",
+  "timestamp": "2024-01-15T10:30:00Z"
+}
+```
+
+```json 400 Bad Request - Invalid FK
+{
+  "success": false,
+  "message": "La clase de vehículo con ID 999 no existe o está inactiva",
+  "timestamp": "2024-01-15T10:30:00Z"
+}
+```
+
+```json 500 Internal Server Error
+{
+  "success": false,
+  "message": "Error interno del servidor",
+  "timestamp": "2024-01-15T10:30:00Z"
+}
+```
+</ResponseExample>

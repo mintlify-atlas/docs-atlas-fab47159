@@ -1,0 +1,202 @@
+---
+title: "Approve Solicitud"
+api: "POST /solicitud/{id}/aprobar"
+description: "Approve a pending solicitud"
+---
+
+## Overview
+
+Approves a transport solicitud, changing its status from **PENDIENTE_APROBACION** to **APROBADA**.
+
+<Note>
+  Missions are **not** created automatically when approving. The approver must manually create missions later in the Missions module.
+</Note>
+
+## Authentication
+
+Requires valid authentication token.
+
+## Path Parameters
+
+<ParamField path="id_solicitud" type="integer" required>
+  The unique ID of the solicitud to approve
+</ParamField>
+
+## Request Body
+
+<ParamField body="motivo" type="string">
+  Optional reason for approval (will be included in email notification)
+</ParamField>
+
+## Business Rules
+
+- Only solicitudes in **PENDIENTE_APROBACION** status can be approved
+- The status change is recorded in the status history (`HistoricoEstadoSolicitud`)
+- A confirmation email is sent to the requester
+- The approval reason (if provided) is included in the notification
+
+## Response
+
+<ResponseField name="success" type="boolean">
+  Indicates if the operation was successful
+</ResponseField>
+
+<ResponseField name="message" type="string">
+  Success message
+</ResponseField>
+
+<ResponseField name="data" type="object">
+  The updated solicitud object with:
+  - Status updated to APROBADA
+  - All solicitud details
+  - Associated locations
+  - Associated missions (if any)
+</ResponseField>
+
+## Status Codes
+
+<ResponseField name="200" type="OK">
+  Solicitud approved successfully
+</ResponseField>
+
+<ResponseField name="404" type="Not Found">
+  Solicitud with the specified ID does not exist
+</ResponseField>
+
+<ResponseField name="409" type="Conflict">
+  Solicitud is not in PENDIENTE_APROBACION status (already approved, rejected, or cancelled)
+</ResponseField>
+
+<ResponseField name="500" type="Internal Server Error">
+  Server error
+</ResponseField>
+
+<RequestExample>
+
+```bash cURL (Without Reason)
+curl -X POST https://api.example.com/solicitud/42/aprobar \
+  -H "Authorization: Bearer YOUR_TOKEN" \
+  -H "Content-Type: application/json" \
+  -d '{}'
+```
+
+```bash cURL (With Reason)
+curl -X POST https://api.example.com/solicitud/42/aprobar \
+  -H "Authorization: Bearer YOUR_TOKEN" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "motivo": "Solicitud cumple con todos los requisitos institucionales"
+  }'
+```
+
+```python Python
+import requests
+
+url = "https://api.example.com/solicitud/42/aprobar"
+headers = {
+    "Authorization": "Bearer YOUR_TOKEN",
+    "Content-Type": "application/json"
+}
+data = {
+    "motivo": "Solicitud cumple con todos los requisitos institucionales"
+}
+
+response = requests.post(url, json=data, headers=headers)
+print(response.json())
+```
+
+```javascript JavaScript
+const response = await fetch('https://api.example.com/solicitud/42/aprobar', {
+  method: 'POST',
+  headers: {
+    'Authorization': 'Bearer YOUR_TOKEN',
+    'Content-Type': 'application/json'
+  },
+  body: JSON.stringify({
+    motivo: 'Solicitud cumple con todos los requisitos institucionales'
+  })
+});
+
+const data = await response.json();
+console.log(data);
+```
+
+</RequestExample>
+
+<ResponseExample>
+
+```json Success Response (200)
+{
+  "success": true,
+  "message": "Solicitud aprobada exitosamente",
+  "data": {
+    "Id": 42,
+    "CodigoSolicitud": "SOL-2026-03-00000042",
+    "IdUsuarioSolicitante": 1,
+    "NombreSolicitante": "Juan Pérez",
+    "EmailSolicitante": "juan.perez@example.com",
+    "IdDepartamentoSolicitante": 2,
+    "NombreDepartamento": "Logística",
+    "IdUsuarioAprobador": 3,
+    "NombreAprobador": "María González",
+    "EmailAprobador": "maria.gonzalez@example.com",
+    "IdTipoPrioridadSolicitud": 2,
+    "NombrePrioridad": "Normal",
+    "IdTipoServicioSolicitud": 1,
+    "NombreTipoServicio": "Transporte de personal",
+    "Asunto": "Transporte de personal a sede central",
+    "Descripcion": "Se requiere transporte para personal de la unidad",
+    "CantidadPasajeros": 5,
+    "FechaServicioRequerido": "2026-04-15",
+    "HoraServicioRequerido": "08:00:00",
+    "IdEstadoActual": 2,
+    "CodigoEstadoActual": "APROBADA",
+    "NombreEstadoActual": "Aprobada",
+    "ColorEstadoActual": "#00FF00",
+    "EsEstadoFinal": false,
+    "FechaHoraCreacion": "2026-03-10T14:30:00",
+    "FechaHoraActualizacion": "2026-03-10T15:45:00",
+    "lugares": [
+      {
+        "Id": 1,
+        "IdLugar": 5,
+        "NombreLugar": "Sede Central",
+        "EsOrigen": true,
+        "Orden": 0
+      }
+    ],
+    "misiones": []
+  }
+}
+```
+
+```json Error Response (409)
+{
+  "success": false,
+  "message": "Solo se pueden aprobar solicitudes en estado PENDIENTE_APROBACION",
+  "data": null
+}
+```
+
+```json Error Response (404)
+{
+  "success": false,
+  "message": "Solicitud con Id 999 no encontrada",
+  "data": null
+}
+```
+
+</ResponseExample>
+
+## Email Notification
+
+When a solicitud is approved, an automatic email notification is sent to the requester with:
+
+- Solicitud code and subject
+- Approval date and time
+- Approval reason (if provided)
+- Next steps information
+
+<Warning>
+  This action cannot be undone. Once approved, the solicitud cannot return to PENDIENTE_APROBACION status.
+</Warning>

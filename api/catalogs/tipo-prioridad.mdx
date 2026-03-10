@@ -1,0 +1,268 @@
+---
+title: Priority Type Catalog
+description: Manage priority type catalog for request priority classification
+---
+
+# Priority Type Catalog API
+
+Manage the catalog of priority types (TipoPrioridadSolicitud) used to classify request priority levels. Note: This catalog only has a `Nombre` field (no `Codigo` field).
+
+**Base Path:** `/tipo-prioridad-solicitud`
+
+## Endpoints
+
+### Create Priority Type
+
+```http
+POST /tipo-prioridad-solicitud/
+```
+
+Creates a new priority type.
+
+#### Request Body
+
+```json
+{
+  "nombre": "Alta"
+}
+```
+
+#### Field Validations
+
+- **nombre** (required): Unique across active records
+
+#### Response
+
+```json
+{
+  "success": true,
+  "message": "Tipo de prioridad creado exitosamente",
+  "data": {
+    "IdTipoPrioridadSolicitud": 1,
+    "Nombre": "Alta",
+    "EsActivo": true
+  }
+}
+```
+
+---
+
+### Get Priority Type by ID
+
+```http
+GET /tipo-prioridad-solicitud/{id_tipo_prioridad}
+```
+
+Retrieves a specific priority type by ID. Only returns active records.
+
+#### Path Parameters
+
+- **id_tipo_prioridad** (integer, required): Priority type ID
+
+#### Response
+
+```json
+{
+  "success": true,
+  "message": "Tipo de prioridad obtenido exitosamente",
+  "data": {
+    "IdTipoPrioridadSolicitud": 1,
+    "Nombre": "Alta",
+    "EsActivo": true
+  }
+}
+```
+
+---
+
+### List Priority Types (Paginated)
+
+```http
+GET /tipo-prioridad-solicitud/
+```
+
+Lists priority types with pagination and optional filters.
+
+#### Query Parameters
+
+- **pagina** (integer, optional, default: 1): Page number (min: 1)
+- **por_pagina** (integer, optional, default: 10): Records per page (min: 1, max: 100)
+- **nombre** (string, optional): Filter by name (partial match)
+- **busqueda** (string, optional): General search in name
+
+#### Response
+
+```json
+{
+  "success": true,
+  "message": "Listado de tipos de prioridad obtenido exitosamente",
+  "data": {
+    "items": [
+      {
+        "IdTipoPrioridadSolicitud": 1,
+        "Nombre": "Alta",
+        "EsActivo": true
+      },
+      {
+        "IdTipoPrioridadSolicitud": 2,
+        "Nombre": "Media",
+        "EsActivo": true
+      },
+      {
+        "IdTipoPrioridadSolicitud": 3,
+        "Nombre": "Baja",
+        "EsActivo": true
+      }
+    ],
+    "total": 3,
+    "pagina": 1,
+    "porPagina": 10,
+    "totalPaginas": 1
+  }
+}
+```
+
+---
+
+### List All Priority Types (No Pagination)
+
+```http
+GET /tipo-prioridad-solicitud/todos/lista
+```
+
+Retrieves all active priority types without pagination. Ideal for dropdowns and select components.
+
+#### Query Parameters
+
+- **nombre** (string, optional): Filter by name
+- **busqueda** (string, optional): General search
+
+#### Response
+
+```json
+{
+  "success": true,
+  "message": "Listado completo de tipos de prioridad obtenido exitosamente",
+  "data": [
+    {
+      "IdTipoPrioridadSolicitud": 1,
+      "Nombre": "Alta"
+    },
+    {
+      "IdTipoPrioridadSolicitud": 2,
+      "Nombre": "Media"
+    },
+    {
+      "IdTipoPrioridadSolicitud": 3,
+      "Nombre": "Baja"
+    }
+  ]
+}
+```
+
+---
+
+### Update Priority Type
+
+```http
+PUT /tipo-prioridad-solicitud/{id_tipo_prioridad}
+```
+
+Updates an existing priority type. Only provided fields are updated.
+
+#### Path Parameters
+
+- **id_tipo_prioridad** (integer, required): Priority type ID
+
+#### Request Body
+
+```json
+{
+  "nombre": "Urgente"
+}
+```
+
+#### Validations
+
+- Record must exist and be active
+- If changing `nombre`, must be unique
+
+#### Response
+
+```json
+{
+  "success": true,
+  "message": "Tipo de prioridad actualizado exitosamente",
+  "data": {
+    "IdTipoPrioridadSolicitud": 1,
+    "Nombre": "Urgente",
+    "EsActivo": true
+  }
+}
+```
+
+---
+
+### Delete Priority Type
+
+```http
+DELETE /tipo-prioridad-solicitud/{id_tipo_prioridad}
+```
+
+Performs a soft delete on a priority type. Cannot delete if there are active requests using this priority type.
+
+#### Path Parameters
+
+- **id_tipo_prioridad** (integer, required): Priority type ID
+
+#### Validations
+
+- Record must exist and be active
+- Cannot have active requests associated
+
+#### Response
+
+```json
+{
+  "success": true,
+  "message": "Tipo de prioridad eliminado exitosamente",
+  "data": {
+    "IdTipoPrioridadSolicitud": 1,
+    "EsActivo": false
+  }
+}
+```
+
+---
+
+## Error Responses
+
+### 404 Not Found
+
+```json
+{
+  "success": false,
+  "message": "Tipo de prioridad no encontrado",
+  "data": null
+}
+```
+
+### 409 Conflict
+
+```json
+{
+  "success": false,
+  "message": "Ya existe un tipo de prioridad con ese nombre",
+  "data": null
+}
+```
+
+### 500 Internal Server Error
+
+```json
+{
+  "success": false,
+  "message": "Error interno del servidor",
+  "data": null
+}
+```
