@@ -1,0 +1,159 @@
+{
+  "projectType": "api-service",
+  "projectName": "Solicitud Transporte API",
+  "projectDescription": "FastAPI backend for managing transport requests, missions, vehicles, and drivers for ONI Justicia",
+  "theme": "sequoia",
+  "primaryColor": "#1e40af",
+  "lightColor": "#3b82f6",
+  "darkColor": "#1e3a8a",
+  "navigation": {
+    "tabs": [
+      {
+        "tab": "Documentation",
+        "groups": [
+          {
+            "group": "Getting Started",
+            "pages": [
+              "introduction",
+              "quickstart",
+              "authentication"
+            ]
+          },
+          {
+            "group": "Core Concepts",
+            "pages": [
+              "concepts/architecture",
+              "concepts/workflow",
+              "concepts/error-handling"
+            ]
+          },
+          {
+            "group": "Guides",
+            "pages": [
+              "guides/request-lifecycle",
+              "guides/mission-management",
+              "guides/vehicle-integration"
+            ]
+          }
+        ]
+      },
+      {
+        "tab": "API Reference",
+        "groups": [
+          {
+            "group": "Core Resources",
+            "pages": [
+              "api/solicitud/overview",
+              "api/solicitud/create",
+              "api/solicitud/list",
+              "api/solicitud/get",
+              "api/solicitud/update",
+              "api/solicitud/approve",
+              "api/solicitud/reject",
+              "api/solicitud/cancel",
+              "api/solicitud/history",
+              "api/solicitud/delete"
+            ]
+          },
+          {
+            "group": "Mission Management",
+            "pages": [
+              "api/mision/overview",
+              "api/mision/create",
+              "api/mision/assign",
+              "api/mision/start",
+              "api/mision/finish",
+              "api/mision/cancel",
+              "api/mision/list",
+              "api/mision/get",
+              "api/mision/update",
+              "api/mision/delete"
+            ]
+          },
+          {
+            "group": "Vehicles",
+            "pages": [
+              "api/vehiculo/overview",
+              "api/vehiculo/create",
+              "api/vehiculo/create-by-plate",
+              "api/vehiculo/query-plate",
+              "api/vehiculo/list",
+              "api/vehiculo/get",
+              "api/vehiculo/update",
+              "api/vehiculo/delete"
+            ]
+          },
+          {
+            "group": "Drivers",
+            "pages": [
+              "api/motorista/overview",
+              "api/motorista/create",
+              "api/motorista/list",
+              "api/motorista/get",
+              "api/motorista/update",
+              "api/motorista/delete"
+            ]
+          },
+          {
+            "group": "Catalog Management",
+            "pages": [
+              "api/catalogs/overview",
+              "api/catalogs/estado-solicitud",
+              "api/catalogs/estado-mision",
+              "api/catalogs/estado-vehiculo",
+              "api/catalogs/clase-vehiculo",
+              "api/catalogs/tipo-combustible",
+              "api/catalogs/tipo-licencia",
+              "api/catalogs/tipo-disponibilidad",
+              "api/catalogs/tipo-prioridad",
+              "api/catalogs/tipo-servicio"
+            ]
+          },
+          {
+            "group": "Additional Resources",
+            "pages": [
+              "api/lugar/overview",
+              "api/departamento/overview",
+              "api/solicitante/overview",
+              "api/factura/overview",
+              "api/cupon/overview"
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  "keyFeatures": [
+    "Transport request workflow with approval system",
+    "Mission lifecycle management (create, assign, execute, complete)",
+    "Vehicle fleet management with external plate API integration",
+    "Driver assignment and availability tracking",
+    "Comprehensive catalog management for statuses and types",
+    "Historical state tracking for requests and missions",
+    "Multi-department support with role-based access",
+    "Email notifications for request state changes",
+    "Mileage and fuel consumption tracking"
+  ],
+  "publicApiSurface": [
+    "POST /solicitud - Create transport request",
+    "POST /solicitud/{id}/aprobar - Approve request",
+    "POST /solicitud/{id}/rechazar - Reject request",
+    "POST /solicitud/{id}/cancelar - Cancel request",
+    "GET /solicitud/{id}/historico - Get request history",
+    "POST /mision - Create mission",
+    "POST /mision/{id}/asignar - Assign vehicle and driver",
+    "POST /mision/{id}/iniciar - Start mission",
+    "POST /mision/{id}/finalizar - Complete mission",
+    "POST /mision/{id}/cancelar - Cancel mission",
+    "POST /vehiculo - Create vehicle",
+    "POST /vehiculo/crear-por-placa - Create vehicle from plate API",
+    "GET /vehiculo/consulta-placa/{placa} - Query external plate API",
+    "POST /motorista - Create driver",
+    "GET /lugar - List locations",
+    "GET /departamento - List departments",
+    "GET /estado-solicitud - List request statuses",
+    "GET /estado-mision - List mission statuses",
+    "GET /clase-vehiculo - List vehicle classes",
+    "GET /tipo-combustible - List fuel types"
+  ]
+}
